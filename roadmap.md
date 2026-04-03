@@ -6,6 +6,10 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 - [x] **Go Basics** — Learn the core syntax: variables, types, functions, and control flow  
   - Understand `var`, `const`, short variable declaration `:=`, and basic data types  
+    - Notes:
+      - When a variable is declared without an initial value, Go assigns a "zero value"
+      - For `int`, it is `0`; for `string`, it is `""`; and for `bool`, it is `false`
+      - `:=` automatically infers the variable type
 - [ ] **Packages & Modules** -- How `go mod`, imports, and the Go module system work.
   - Understand `go.mod`, `go.sum`, and organizing code across packages.
 - [ ] **Slices & Maps** -- Go's primary data structures for collections.
