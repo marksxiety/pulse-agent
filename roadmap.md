@@ -10,8 +10,14 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
       - When a variable is declared without an initial value, Go assigns a "zero value"
       - For `int`, it is `0`; for `string`, it is `""`; and for `bool`, it is `false`
       - `:=` automatically infers the variable type
-- [ ] **Packages & Modules** -- How `go mod`, imports, and the Go module system work.
-  - Understand `go.mod`, `go.sum`, and organizing code across packages.
+- [x] **Packages & Modules** — Learn how `go mod`, imports, and the Go module system work  
+  - Understand `go.mod`, `go.sum`, and how to organize code across packages  
+  - Notes:
+    - **Folder Name = Package Name**: If your folder is named `calculator`, the files inside should start with `package calculator`
+    - **The `main` Package**: This is special. Every executable program must have one folder (usually the root) labeled `package main`. This is where `func main()` resides
+    - **Exporting (Public vs. Private)**:
+      - If a function starts with a capital letter (e.g., `Add`), it is exported and can be used by other packages
+      - If it starts with a lowercase letter (e.g., `add`), it is private to its own package
 - [ ] **Slices & Maps** -- Go's primary data structures for collections.
   - Learn `append`, `make`, `len`, `cap`, and iterating with `range`.
 - [ ] **Functions** -- Multiple return values, named returns, and defer.
