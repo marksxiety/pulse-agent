@@ -1,4 +1,4 @@
-# Pulse-Check Learning Roadmap
+# Pulse-Agent Learning Roadmap
 
 This roadmap tracks the Go fundamentals required to transform this CLI into a production-grade industrial tool.
 
@@ -18,12 +18,31 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
     - **Exporting (Public vs. Private)**:
       - If a function starts with a capital letter (e.g., `Add`), it is exported and can be used by other packages
       - If it starts with a lowercase letter (e.g., `add`), it is private to its own package
-- [ ] **Slices & Maps** -- Go's primary data structures for collections.
-  - Learn `append`, `make`, `len`, `cap`, and iterating with `range`.
-- [ ] **Functions** -- Multiple return values, named returns, and defer.
-  - Understand why Go uses `func (args) (returnType, error)` pattern.
-- [ ] **Go Tooling** -- Essential commands for development.
-  - `go run`, `go build`, `go test`, `go fmt`, `go vet`.
+    - **One Package per Folder**: Every `.go` file inside the same folder must have the exact same package name at the top
+    - **`main` Package as the Entry Point**: To create a runnable program (an executable or binary), your starting file must use `package main` and contain `func main()`
+    - **No Repeats**: You do not need to import a package to use functions from another file in the same folder
+      - Example: If `file_a.go` and `file_b.go` are both in the `calculator` folder, `file_a` can use functions from `file_b` automatically
+- [x] **Slices & Maps** — Go's primary data structures for collections  
+  - Learn `append`, `make`, `len`, `cap`, and iterating with `range`.  
+  - Notes:
+    - `make()` is used to create and initialize certain built-in reference types.
+    - Slices are for arrays, maps are for objects, and channels are used for pipelines or queues.
+
+- [x] **Functions** — Multiple return values, named returns, and `defer`.  
+  - Understand why Go uses the `func (args) (returnType, error)` pattern.
+    - Notes:
+      - Multiple returns (standard) return both the value and the error itself.
+      - Named returns improve self-documentation by explicitly declaring return variables and their types.
+      - `defer` ensures a function is executed regardless of what happens in the surrounding function. It is commonly used for closing database connections or cleaning up resources.
+
+- [x] **Go Tooling** — Essential commands for development  
+  - `go run`, `go build`, `go test`, `go fmt`, `go vet`
+    - Notes:
+      - `go run` — Compiles and runs the code (no file saved).
+      - `go build` — Compiles the code into a standalone `.exe` or binary.
+      - `go fmt` — Rewrites code with proper formatting and spacing.
+      - `go vet` — Analyzes code and reports potential logic issues.
+      - `go test` — Executes tests and outputs a "PASS" or "FAIL" report.
 
 ## Phase 1: Data Modeling (The "What")
 
