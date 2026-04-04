@@ -46,8 +46,11 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 ## Phase 1: Data Modeling (The "What")
 
-- [ ] **Structs & Tags** -- Learn how to define the `Metric` struct.
+- [x] **Structs & Tags** -- Learn how to define the `Metric` struct.
   - Understand `json:"value"` tags for future API integration.
+    - Notes:
+      - `Structs` are **groupings of related data**. They are usually used for forms or structured data. Think of them as the **"container" for your data logic**.
+      - `Tags` are used to label struct fields and define where or how they will be used, such as `json:` or `db:`. Think of them as **"mapping instructions"** that tell external libraries how to handle that data.
 - [ ] **Custom Types** -- Creating a `type Source string` to replace raw strings for better safety.
 - [ ] **Pointers (`*`)** -- Understanding when to pass a reference to a metric instead of a copy to save RAM.
 
