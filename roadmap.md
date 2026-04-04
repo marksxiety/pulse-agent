@@ -51,8 +51,14 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
     - Notes:
       - `Structs` are **groupings of related data**. They are usually used for forms or structured data. Think of them as the **"container" for your data logic**.
       - `Tags` are used to label struct fields and define where or how they will be used, such as `json:` or `db:`. Think of them as **"mapping instructions"** that tell external libraries how to handle that data.
-- [ ] **Custom Types** -- Creating a `type Source string` to replace raw strings for better safety.
-- [ ] **Pointers (`*`)** -- Understanding when to pass a reference to a metric instead of a copy to save RAM.
+- [x] **Custom Types** -- Creating a `type Source string` to replace raw strings for better safety.
+  - Notes:
+    - Custom types act as a constraint that restricts data to a defined type. It's the equivalent of `Enum` in TypeScript, ensuring only specific values can be assigned to a variable.
+- [x] **Pointers (`*`)** -- Understanding when to pass a reference to a metric instead of a copy.
+  - Notes:
+    - Using pointers depends on how large the struct is and how frequently it is passed around.
+    - Pointers add overhead (heap allocation, GC tracking, nil checks). For small structs (like `Metric` at ~24 bytes), passing by value is often cheaper and simpler.
+    - Use pointers when: (1) the struct is large and copying is expensive, (2) you need to mutate the original, or (3) a method requires a pointer receiver to satisfy an interface.
 
 ## Phase 2: Logic & Abstraction (The "How")
 
