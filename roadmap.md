@@ -62,10 +62,22 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 ## Phase 2: Logic & Abstraction (The "How")
 
-- [ ] **Interfaces** -- **CRITICAL:** Creating a `type Collector interface { Collect() Metric }`.
+- [x] **Interfaces** -- **CRITICAL:** Creating a `type Collector interface { Collect() Metric }`.
   - This allows you to add any new hardware (GPU, Network) without changing `main.go`.
-- [ ] **Methods** -- Attaching logic directly to your collectors (e.g., `func (c CPUCollector) Collect()`).
-- [ ] **Error Handling** -- Mastering the `if err != nil` pattern to handle OS permission denials.
+  - Notes:
+    - It describes the **behavior**.
+    - This serves as the ability of the type
+    - For the analogy, `Struct` is the noun and `interface` is the verb.
+- [x] **Methods** -- Attaching logic directly to your collectors (e.g., `func (c CPUCollector) Collect()`).
+  - Notes:
+    - Methods are the **bridge between structs and interfaces**. A struct defines the data, an interface defines the expected behavior, and a method is the actual implementation that satisfies it.
+    - When a struct implements all the methods defined by an interface, it is said to **satisfy** that interface — no explicit declaration needed.
+    - **Value receivers** (`func (c CPUCollector)`) operate on a copy of the struct. **Pointer receivers** (`func (c *CPUCollector)`) operate on the original and can mutate it.
+- [x] **Error Handling** -- Mastering the `if err != nil` pattern to handle OS permission denials.
+  - Notes:
+    - **The Pattern**: Call a function that returns a value and an error, then immediately check `if err != nil` to handle failures before proceeding (e.g., `result, err := function(); if err != nil { ... }`).
+    - **Permission Errors**: Use `os.IsPermission(err)` to detect when the OS denies access, so you can inform the user that elevated privileges are required.
+    - **Interfaces**: Always include `error` in your interface method signatures (e.g., `Collect() (Metric, error)`) so the caller knows whether the returned data is valid.
 
 ## Phase 3: High-Performance Concurrency (The "Engine")
 
