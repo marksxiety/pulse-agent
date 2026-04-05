@@ -7,8 +7,11 @@ import (
 	"os/signal"
 	"pulse-agent/collector"
 	"pulse-agent/models"
+	"pulse-agent/ui"
 	"sync"
 	"syscall"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
@@ -17,9 +20,8 @@ func main() {
 
 	dataPipe := make(chan models.Metric)
 
-	fmt.Println("Pulse agent started")
+	p := tea.NewProgram(ui.InitialModel())
 
-	// Start collectors in separate goroutines
 	var wg sync.WaitGroup
 	wg.Add(3)
 	go func() {
@@ -37,18 +39,24 @@ func main() {
 		collector.DiskCollector{}.Collect(ctx, dataPipe)
 	}()
 
-	// Listen for termination signals to gracefully shut down (Ctrl+C)
+	go func() {
+		for m := range dataPipe {
+			p.Send(models.NewDataMsg(m))
+		}
+	}()
+
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sigCh
-		fmt.Println("\nShutting down...")
 		cancel()
 		wg.Wait()
 		close(dataPipe)
+		p.Quit()
 	}()
 
-	for m := range dataPipe {
-		fmt.Printf("[%s] Usage: %.2f%%\n", m.Source, m.Value)
+	if _, err := p.Run(); err != nil {
+		fmt.Fprintf(os.Stderr, "Error running program: %v\n", err)
+		os.Exit(1)
 	}
 }
