@@ -6,3 +6,5 @@ type Metric struct {
 	Source types.Source
 	Value  float64
 }
+
+type NewDataMsg Metric
