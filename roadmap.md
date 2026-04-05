@@ -81,14 +81,23 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 ## Phase 3: High-Performance Concurrency (The "Engine")
 
-- [ ] **Goroutines** -- Mastering the `go` keyword and managing the lifecycle of background workers.
-- [ ] **Channels** -- Buffered vs. Unbuffered channels.
+- [x] **Goroutines** -- Mastering the `go` keyword and managing the lifecycle of background workers.
+- Notes:
+  - Managed by `Go runtime` (not OS directly)
+  - `Go` is not single thread by default. It uses 'GMP' scheduler
+- [x] **Channels** -- Buffered vs. Unbuffered channels.
   - Using `select` to handle multiple data streams and "Quit" signals.
-- [ ] **Context (`context` package)** -- Implementing graceful shutdowns so the agent finishes its last task before exiting.
+  - Notes:
+    - This serve as the `medium` of goroutines.
+    - 'Sending' `Mychannel <- element`
+    - 'Recieving' `element := <-Mychannel`
+- [x] **Context (`context` package)** -- Implementing graceful shutdowns so the agent finishes its last task before exiting.
+- Notes:
+  - provides a mechanism to control the lifecycle, cancellation, and propagation of requests across multiple goroutines.
+  - It can add also in http requests, database operations
 
 ## Phase 4: Production Features (The "Where")
 
-- [ ] **Standard Library (`net/http`)** -- Sending your metrics to a central server (like KRONOS) via POST requests.
 - [ ] **Environment Variables** -- Using `os.Getenv` to configure polling intervals without re-compiling.
 - [ ] **TUI (Terminal UI)** -- Using `Bubble Tea` to create a visual dashboard with real-time graphs.
 
