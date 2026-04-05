@@ -98,7 +98,12 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 ## Phase 4: Production Features (The "Where")
 
-- [ ] **Environment Variables** -- Using `os.Getenv` to configure polling intervals without re-compiling.
+- [x] **Environment Variables** -- Using `os.Getenv` to configure polling intervals without re-compiling.
+  - Notes:
+    - `Setenv` used to override the current env usually for testing or debugging
+    - `Getenv` is the retrieving or most common approach for environment variables
+    - `LookupEnv` better approach to ensure that the enviroment variables are set before using in the logic/processes.
+    - Go **does not** read `.env` files natively. Use `github.com/joho/godotenv` to auto-load `.env` into the process environment via `godotenv.Load()` (typically in `init()`).
 - [ ] **TUI (Terminal UI)** -- Using `Bubble Tea` to create a visual dashboard with real-time graphs.
 
 ## Phase 5: Metric Collection Goals
