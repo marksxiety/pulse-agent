@@ -56,8 +56,8 @@ var (
 			BorderForeground(colorBorder)
 
 	titleStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorText)
-	labelStyle  = lipgloss.NewStyle().Foreground(colorSubtle)
-	valueStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorText)
+	labelStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorText).Background(colorSurface)
+	valueStyle  = lipgloss.NewStyle().Bold(true).Foreground(colorText).Background(colorSurface)
 	dimStyle    = lipgloss.NewStyle().Foreground(colorDim)
 	headerStyle = lipgloss.NewStyle().Bold(true).Foreground(colorText).Padding(0, 1)
 	footerStyle = lipgloss.NewStyle().Foreground(colorDim).Padding(0, 1)
@@ -100,13 +100,14 @@ func progressBar(pct float64, width int, accent lipgloss.Color) string {
 // row renders a label + right-aligned value within the card's inner width.
 func row(label, val string) string {
 	inner := cardWidth - 4
-	l := valueStyle.Render(label)
+	l := labelStyle.Render(label)
 	v := valueStyle.Render(val)
 	gap := inner - lipgloss.Width(l) - lipgloss.Width(v)
 	if gap < 1 {
 		gap = 1
 	}
-	return l + strings.Repeat(" ", gap) + v
+	gapStr := lipgloss.NewStyle().Background(colorSurface).Render(strings.Repeat(" ", gap))
+	return l + gapStr + v
 }
 
 func separator(c lipgloss.Color) string {
