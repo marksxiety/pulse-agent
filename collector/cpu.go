@@ -6,15 +6,18 @@ import (
 	"pulse-agent/models"
 	"pulse-agent/types"
 	"time"
-
-	"github.com/shirou/gopsutil/v3/cpu"
 )
 
-type CPUCollector struct{}
+type CPUCollector struct {
+	sys SystemInfo
+}
+
+func NewCPUCollector(sys SystemInfo) CPUCollector {
+	return CPUCollector{sys: sys}
+}
 
 func (c CPUCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
-
-	cores, err := cpu.Counts(true)
+	cores, err := c.sys.CPUCount(true)
 	if err != nil {
 		cores = 0
 	}
@@ -24,7 +27,7 @@ func (c CPUCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 		case <-ctx.Done():
 			return
 		default:
-			v, err := cpu.Percent(time.Second, false)
+			v, err := c.sys.CPUPercent(time.Second, false)
 			if err != nil {
 				log.Printf("[CPU] Percent error: %v", err)
 			} else if len(v) > 0 {
