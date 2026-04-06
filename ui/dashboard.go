@@ -29,6 +29,8 @@ var (
 
 	colorWarn = lipgloss.Color("#f9e2af")
 	colorDang = lipgloss.Color("#f38ba8")
+
+	sparklineRunes = []rune("▁▂▃▄▅▆▇█")
 )
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -41,8 +43,7 @@ const (
 	outerPadV = 1   // top/bottom outer padding (lines)
 
 	// All cards are padded to this exact line count so they share one height.
-	// Tallest card is Disk with 16 body lines — CPU/Mem get blank lines appended.
-	cardBodyLines = 16
+	cardBodyLines = 23
 )
 
 // ── Styles ────────────────────────────────────────────────────────────────────
@@ -95,6 +96,65 @@ func progressBar(pct float64, width int, accent lipgloss.Color) string {
 		lipgloss.NewStyle().Foreground(colorMuted).Render(strings.Repeat("░", empty))
 	pctStr := lipgloss.NewStyle().Foreground(barColor).Bold(true).Render(fmt.Sprintf("%5.1f%%", pct))
 	return bar + " " + pctStr
+}
+
+func sparkline(values []float64, accent lipgloss.Color) string {
+	if len(values) == 0 {
+		return ""
+	}
+
+	min, max := values[0], values[0]
+	for _, v := range values[1:] {
+		if v < min {
+			min = v
+		}
+		if v > max {
+			max = v
+		}
+	}
+
+	span := max - min
+	if span == 0 {
+		return lipgloss.NewStyle().Foreground(accent).Render(
+			strings.Repeat(string(sparklineRunes[4]), len(values)))
+	}
+
+	levels := len(sparklineRunes) - 1
+	var sb strings.Builder
+	for _, v := range values {
+		idx := int((v-min)/span*float64(levels) + 0.5)
+		if idx > levels {
+			idx = levels
+		}
+		sb.WriteRune(sparklineRunes[idx])
+	}
+
+	return lipgloss.NewStyle().Foreground(accent).Render(sb.String())
+}
+
+func historySection(h *models.MetricHistory, sparkWidth int, accent lipgloss.Color) []string {
+	if h.Len() < 2 {
+		return []string{
+			"",
+			separator(colorMuted),
+			"",
+			dimStyle.Render("  Collecting data…"),
+		}
+	}
+
+	sampled := h.Downsample(sparkWidth)
+	spark := sparkline(sampled, accent)
+
+	return []string{
+		"",
+		separator(colorMuted),
+		"",
+		lipgloss.NewStyle().Foreground(colorSubtle).Bold(true).Background(colorSurface).Render("  Trend (3h)"),
+		spark,
+		"",
+		lipgloss.NewStyle().Foreground(colorSubtle).Background(colorSurface).Render(
+			fmt.Sprintf("  Peak %5.1f%%", h.Max())),
+	}
 }
 
 // row renders a label + right-aligned value within the card's inner width.
@@ -164,6 +224,7 @@ func centreBlock(s string, termW int) string {
 func cpuCard(m Model) string {
 	accent := colorCPUAccent
 	header := cardHeader("󰻠 ", "CPU", "PROCESSOR", accent)
+	sparkW := cardWidth - 4
 
 	var lines []string
 	if !m.cpuReady {
@@ -180,6 +241,11 @@ func cpuCard(m Model) string {
 			row("Cores", fmt.Sprintf("%d", m.CPU.CoreCount)),
 			row("Usage", fmt.Sprintf("%.2f%%", m.CPU.Percentage)),
 		}
+		hist := historySection(m.cpuHistory, sparkW, accent)
+		for i := len(lines) + len(hist); i < cardBodyLines; i++ {
+			lines = append(lines, "")
+		}
+		lines = append(lines, hist...)
 	}
 
 	lines = padToHeight(overflowGuard(lines, cardBodyLines), cardBodyLines)
@@ -193,6 +259,7 @@ func cpuCard(m Model) string {
 func memCard(m Model) string {
 	accent := colorMemAccent
 	header := cardHeader("󰍛 ", "Memory", "RAM", accent)
+	sparkW := cardWidth - 4
 
 	var lines []string
 	if !m.memReady {
@@ -212,6 +279,11 @@ func memCard(m Model) string {
 			row("Available", bytesToGB(m.Mem.Available)),
 			row("Pagefile", bytesToMB(m.Mem.PagefileUsage)),
 		}
+		hist := historySection(m.memHistory, sparkW, accent)
+		for i := len(lines) + len(hist); i < cardBodyLines; i++ {
+			lines = append(lines, "")
+		}
+		lines = append(lines, hist...)
 	}
 
 	lines = padToHeight(overflowGuard(lines, cardBodyLines), cardBodyLines)
@@ -225,6 +297,7 @@ func memCard(m Model) string {
 func diskCard(m Model) string {
 	accent := colorDiskAccent
 	header := cardHeader("󰋊 ", "Disk", "STORAGE", accent)
+	sparkW := cardWidth - 4
 
 	var lines []string
 	if !m.diskReady {
@@ -251,6 +324,11 @@ func diskCard(m Model) string {
 			row("Read Ops", fmt.Sprintf("%d", io.ReadCount)),
 			row("Write Ops", fmt.Sprintf("%d", io.WriteCount)),
 		}
+		hist := historySection(m.diskHistory, sparkW, accent)
+		for i := len(lines) + len(hist); i < cardBodyLines; i++ {
+			lines = append(lines, "")
+		}
+		lines = append(lines, hist...)
 	}
 
 	lines = padToHeight(overflowGuard(lines, cardBodyLines), cardBodyLines)
@@ -273,10 +351,22 @@ type Model struct {
 	startedAt time.Time
 	termW     int
 	termH     int
+
+	cpuHistory  *models.MetricHistory
+	memHistory  *models.MetricHistory
+	diskHistory *models.MetricHistory
+	lastSample  time.Time
 }
 
 func InitialModel() Model {
-	return Model{termW: 120, termH: 40, startedAt: time.Now()}
+	return Model{
+		termW:       120,
+		termH:       40,
+		startedAt:   time.Now(),
+		cpuHistory:  models.NewMetricHistory(),
+		memHistory:  models.NewMetricHistory(),
+		diskHistory: models.NewMetricHistory(),
+	}
 }
 
 func (m Model) Init() tea.Cmd { return nil }
@@ -297,6 +387,18 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case models.DiskPayload:
 			m.Disk = p
 			m.diskReady = true
+		}
+		if time.Since(m.lastSample) >= 5*time.Second {
+			m.lastSample = time.Now()
+			if m.cpuReady {
+				m.cpuHistory.Push(m.CPU.Percentage)
+			}
+			if m.memReady && m.Mem.Total > 0 {
+				m.memHistory.Push(float64(m.Mem.Used) / float64(m.Mem.Total) * 100)
+			}
+			if m.diskReady && m.Disk.Total > 0 {
+				m.diskHistory.Push(float64(m.Disk.Used) / float64(m.Disk.Total) * 100)
+			}
 		}
 	case tea.KeyMsg:
 		if msg.String() == "q" || msg.String() == "ctrl+c" {
