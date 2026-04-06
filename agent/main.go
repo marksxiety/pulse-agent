@@ -19,6 +19,7 @@ func main() {
 	defer cancel()
 
 	dataPipe := make(chan models.Metric)
+	live := collector.LiveSystemInfo{}
 
 	// tea.WithAltScreen() gives bubbletea full ownership of the terminal
 	// viewport — it clears the screen on every frame, which prevents the
@@ -29,17 +30,17 @@ func main() {
 	wg.Add(3)
 	go func() {
 		defer wg.Done()
-		collector.CPUCollector{}.Collect(ctx, dataPipe)
+		collector.NewCPUCollector(live).Collect(ctx, dataPipe)
 	}()
 
 	go func() {
 		defer wg.Done()
-		collector.MemoryCollector{}.Collect(ctx, dataPipe)
+		collector.NewMemoryCollector(live).Collect(ctx, dataPipe)
 	}()
 
 	go func() {
 		defer wg.Done()
-		collector.DiskCollector{}.Collect(ctx, dataPipe)
+		collector.NewDiskCollector(live).Collect(ctx, dataPipe)
 	}()
 
 	go func() {
