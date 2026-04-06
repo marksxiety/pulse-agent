@@ -6,11 +6,15 @@ import (
 	"pulse-agent/models"
 	"pulse-agent/types"
 	"time"
-
-	"github.com/shirou/gopsutil/v3/mem"
 )
 
-type MemoryCollector struct{}
+type MemoryCollector struct {
+	sys SystemInfo
+}
+
+func NewMemoryCollector(sys SystemInfo) MemoryCollector {
+	return MemoryCollector{sys: sys}
+}
 
 func (m MemoryCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 	for {
@@ -18,7 +22,7 @@ func (m MemoryCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 		case <-ctx.Done():
 			return
 		default:
-			vMem, err := mem.VirtualMemory()
+			vMem, err := m.sys.VirtualMemory()
 			if err != nil {
 				log.Printf("[Memory] VirtualMemory error: %v", err)
 				time.Sleep(2 * time.Second)
@@ -26,7 +30,7 @@ func (m MemoryCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 			}
 
 			var pageFileUsed uint64
-			vSwap, err := mem.SwapMemory()
+			vSwap, err := m.sys.SwapMemory()
 			if err != nil {
 				log.Printf("[Memory] SwapMemory error: %v", err)
 			} else {
