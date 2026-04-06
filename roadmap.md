@@ -108,13 +108,19 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
 
 ## Phase 5: Metric Collection Goals
 
-- [ ] **CPU Metrics** -- Fetch CPU usage percentage, core count, and load averages (not).
+- [x] **CPU Metrics** -- Fetch CPU usage percentage, core count, and load averages (not).
   - Use `github.com/shirou/gopsutil/v3/cpu` or parse `/proc/stat` on Linux.
   - Notes: 
-    - Implement the Percentage (initial)
-    - Add the core count
-    - Load average (not applicable in windows)
-- [ ] **Memory Metrics** -- Fetch total, used, available memory and swap usage.
+    - Implemented percentage (initial)
+    - Added core count
+    - Load averages (not applicable on Windows)
+- [x] **Memory Metrics** -- Fetch total, used, available memory and swap usage.
   - Use `github.com/shirou/gopsutil/v3/mem` or call OS-specific APIs.
-- [ ] **Disk Metrics** -- Fetch disk usage (total, used, free) and I/O stats.
+  - Notes:
+    - Implemented total, used, and available memory
+    - Added swap/pagefile usage
+- [x] **Disk Metrics** -- Fetch disk usage (total, used, free) and I/O stats.
   - Use `github.com/shirou/gopsutil/v3/disk` or parse `df`/`wmic` output.
+  - Notes:
+    - Implemented total, used, and available disk space
+    - Added I/O stats (read/write bytes and operation counts)
