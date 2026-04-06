@@ -18,12 +18,27 @@ func (m MemoryCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 		case <-ctx.Done():
 			return
 		default:
-			v, err := mem.VirtualMemory()
+			vMem, err := mem.VirtualMemory()
 			if err != nil {
 				log.Printf("[Memory] VirtualMemory error: %v", err)
-			} else {
-				ch <- models.Metric{Source: types.MEM, Value: v.UsedPercent}
+				time.Sleep(2 * time.Second)
+				continue
 			}
+
+			var pageFileUsed uint64
+			vSwap, err := mem.SwapMemory()
+			if err != nil {
+				log.Printf("[Memory] SwapMemory error: %v", err)
+			} else {
+				pageFileUsed = vSwap.Used
+			}
+
+			ch <- models.Metric{Source: types.MEM, Data: models.MemoryPayload{
+				Total:         vMem.Total,
+				Used:          vMem.Used,
+				Available:     vMem.Available,
+				PagefileUsage: pageFileUsed,
+			}}
 			time.Sleep(2 * time.Second)
 		}
 	}
