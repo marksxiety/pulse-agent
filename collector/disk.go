@@ -6,11 +6,15 @@ import (
 	"pulse-agent/models"
 	"pulse-agent/types"
 	"time"
-
-	"github.com/shirou/gopsutil/v3/disk"
 )
 
-type DiskCollector struct{}
+type DiskCollector struct {
+	sys SystemInfo
+}
+
+func NewDiskCollector(sys SystemInfo) DiskCollector {
+	return DiskCollector{sys: sys}
+}
 
 func (d DiskCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 	for {
@@ -18,14 +22,14 @@ func (d DiskCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 		case <-ctx.Done():
 			return
 		default:
-			usage, err := disk.Usage("/")
+			usage, err := d.sys.DiskUsage("/")
 			if err != nil {
 				log.Printf("Error occurred while collecting disk usage: %v", err)
 				time.Sleep(1 * time.Second)
 				continue
 			}
 
-			ioCounters, err := disk.IOCounters()
+			ioCounters, err := d.sys.DiskIOCounters()
 			var ioStats models.DiskIOStats
 
 			if err == nil && len(ioCounters) > 0 {
