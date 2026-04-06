@@ -104,12 +104,16 @@ This roadmap tracks the Go fundamentals required to transform this CLI into a pr
     - `Getenv` is the retrieving or most common approach for environment variables
     - `LookupEnv` better approach to ensure that the enviroment variables are set before using in the logic/processes.
     - Go **does not** read `.env` files natively. Use `github.com/joho/godotenv` to auto-load `.env` into the process environment via `godotenv.Load()` (typically in `init()`).
-- [ ] **TUI (Terminal UI)** -- Using `Bubble Tea` to create a visual dashboard with real-time graphs.
+- [x] **TUI (Terminal UI)** -- Using `Bubble Tea` to create a visual dashboard with real-time graphs.
 
 ## Phase 5: Metric Collection Goals
 
-- [ ] **CPU Metrics** -- Fetch CPU usage percentage, core count, and load averages.
+- [ ] **CPU Metrics** -- Fetch CPU usage percentage, core count, and load averages (not).
   - Use `github.com/shirou/gopsutil/v3/cpu` or parse `/proc/stat` on Linux.
+  - Notes: 
+    - Implement the Percentage (initial)
+    - Add the core count
+    - Load average (not applicable in windows)
 - [ ] **Memory Metrics** -- Fetch total, used, available memory and swap usage.
   - Use `github.com/shirou/gopsutil/v3/mem` or call OS-specific APIs.
 - [ ] **Disk Metrics** -- Fetch disk usage (total, used, free) and I/O stats.
