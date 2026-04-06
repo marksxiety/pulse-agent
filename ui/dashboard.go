@@ -23,12 +23,12 @@ var (
 	colorText    = lipgloss.Color("#cdd6f4")
 	colorDim     = lipgloss.Color("#585b70")
 
-	colorCPUAccent  = lipgloss.Color("#89b4fa") // blue
-	colorMemAccent  = lipgloss.Color("#a6e3a1") // green
-	colorDiskAccent = lipgloss.Color("#cba6f7") // mauve
+	colorCPUAccent  = lipgloss.Color("#89b4fa")
+	colorMemAccent  = lipgloss.Color("#a6e3a1")
+	colorDiskAccent = lipgloss.Color("#cba6f7")
 
-	colorWarn = lipgloss.Color("#f9e2af") // yellow
-	colorDang = lipgloss.Color("#f38ba8") // red
+	colorWarn = lipgloss.Color("#f9e2af")
+	colorDang = lipgloss.Color("#f38ba8")
 )
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -68,6 +68,17 @@ var (
 func bytesToGB(b uint64) string { return fmt.Sprintf("%.2f GB", float64(b)/1e9) }
 func bytesToMB(b uint64) string { return fmt.Sprintf("%.1f MB", float64(b)/1e6) }
 
+func formatUptime(d time.Duration) string {
+	d = d.Round(time.Second)
+	h := int(d.Hours())
+	m := int(d.Minutes()) % 60
+	s := int(d.Seconds()) % 60
+	if h > 0 {
+		return fmt.Sprintf("%dh %02dm %02ds", h, m, s)
+	}
+	return fmt.Sprintf("%dm %02ds", m, s)
+}
+
 func progressBar(pct float64, width int, accent lipgloss.Color) string {
 	pct = math.Max(0, math.Min(100, pct))
 	filled := int(math.Round(pct / 100 * float64(width)))
@@ -88,9 +99,9 @@ func progressBar(pct float64, width int, accent lipgloss.Color) string {
 
 // row renders a label + right-aligned value within the card's inner width.
 func row(label, val string) string {
-	l := labelStyle.Render(label)
-	v := valueStyle.Render(val)
 	inner := cardWidth - 4
+	l := valueStyle.Render(label)
+	v := valueStyle.Render(val)
 	gap := inner - lipgloss.Width(l) - lipgloss.Width(v)
 	if gap < 1 {
 		gap = 1
@@ -258,13 +269,13 @@ type Model struct {
 	cpuReady  bool
 	memReady  bool
 	diskReady bool
-	tick      int
+	startedAt time.Time
 	termW     int
 	termH     int
 }
 
 func InitialModel() Model {
-	return Model{termW: 120, termH: 40}
+	return Model{termW: 120, termH: 40, startedAt: time.Now()}
 }
 
 func (m Model) Init() tea.Cmd { return nil }
@@ -286,7 +297,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Disk = p
 			m.diskReady = true
 		}
-		m.tick++
 	case tea.KeyMsg:
 		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
@@ -328,13 +338,12 @@ func (m Model) View() string {
 		dashW = effectiveW - outerPadH*2
 	}
 
-	// ── Header (spans dashW, then centred as a block) ──
+	// ── Header ──
 	now := time.Now().Format("15:04:05")
-
 	titleStr := lipgloss.NewStyle().Bold(true).Foreground(colorCPUAccent).Render("◆ PULSE") +
 		lipgloss.NewStyle().Foreground(colorSubtle).Render(" AGENT")
 	clockStr := lipgloss.NewStyle().Foreground(colorDim).Render(now) +
-		dimStyle.Render(fmt.Sprintf("  #%d", m.tick))
+		dimStyle.Render(fmt.Sprintf("  up %s", formatUptime(time.Since(m.startedAt))))
 
 	hl := headerStyle.Render(titleStr)
 	hr := footerStyle.Render(clockStr)
@@ -344,7 +353,7 @@ func (m Model) View() string {
 	}
 	header := centreBlock(hl+strings.Repeat(" ", hGap)+hr, m.termW)
 
-	// ── Cards (joined horizontally, then centred as one block) ──
+	// ── Cards ──
 	gapStr := strings.Repeat(" ", cardGap)
 	cards := lipgloss.JoinHorizontal(lipgloss.Top,
 		cpuCard(m),
@@ -355,7 +364,7 @@ func (m Model) View() string {
 	)
 	centeredCards := centreBlock(cards, m.termW)
 
-	// ── Footer ──
+	// ── Footer (fixed to bottom) ──
 	quitStr := footerStyle.Render("  q  quit")
 	versionStr := dimStyle.Render("pulse-agent v0.1")
 	fGap := dashW - lipgloss.Width(quitStr) - lipgloss.Width(versionStr)
@@ -364,17 +373,31 @@ func (m Model) View() string {
 	}
 	footer := centreBlock(quitStr+strings.Repeat(" ", fGap)+versionStr, m.termW)
 
-	// ── Wrap everything in a terminal-sized box so bubbletea clears cleanly ──
-	content := strings.Join([]string{
-		"",
-		header,
-		"",
-		centeredCards,
-		"",
-		footer,
-		"",
-	}, "\n")
+	// ── Vertical centering ──
+	// Measure how many lines the top section (header + blank + cards) occupies.
+	headerLines := 1
+	cardBlockLines := lipgloss.Height(centeredCards)
+	footerLines := 1
 
+	// Total lines consumed by header + gap + cards + gap + footer
+	usedLines := headerLines + 1 + cardBlockLines + 1 + footerLines
+
+	// Remaining space is split: half above header, half below cards (above footer).
+	remaining := m.termH - usedLines
+	if remaining < 0 {
+		remaining = 0
+	}
+	topPad := remaining / 2
+	// bottomPad fills the gap between cards and the pinned footer.
+	bottomPad := remaining - topPad
+
+	top := strings.Repeat("\n", topPad)
+	mid := strings.Repeat("\n", bottomPad)
+
+	// Assemble: top padding → header → cards → elastic middle → pinned footer.
+	content := top + header + "\n\n" + centeredCards + "\n" + mid + footer
+
+	// Wrap in terminal dimensions so bubbletea diffs cleanly on every resize.
 	return lipgloss.NewStyle().
 		Width(m.termW).
 		Height(m.termH).
