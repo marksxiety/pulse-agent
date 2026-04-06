@@ -13,6 +13,12 @@ import (
 type CPUCollector struct{}
 
 func (c CPUCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
+
+	cores, err := cpu.Counts(true)
+	if err != nil {
+		cores = 0
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
@@ -22,7 +28,10 @@ func (c CPUCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 			if err != nil {
 				log.Printf("[CPU] Percent error: %v", err)
 			} else if len(v) > 0 {
-				ch <- models.Metric{Source: types.CPU, Value: v[0]}
+				ch <- models.Metric{
+					Source: types.CPU,
+					Data:   models.CPUPayload{Percentage: v[0], CoreCount: cores},
+				}
 			}
 			time.Sleep(2 * time.Second)
 		}
