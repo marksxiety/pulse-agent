@@ -20,7 +20,10 @@ func main() {
 
 	dataPipe := make(chan models.Metric)
 
-	p := tea.NewProgram(ui.InitialModel())
+	// tea.WithAltScreen() gives bubbletea full ownership of the terminal
+	// viewport — it clears the screen on every frame, which prevents the
+	// "ghost content" multiplication you get when resizing without it.
+	p := tea.NewProgram(ui.InitialModel(), tea.WithAltScreen())
 
 	var wg sync.WaitGroup
 	wg.Add(3)
