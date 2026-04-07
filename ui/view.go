@@ -38,7 +38,7 @@ func (m Model) View() string {
 
 	now := time.Now().Format("15:04:05")
 	titleStr := lipgloss.NewStyle().Bold(true).Foreground(components.ColorCPUAccent).Render("◆ PULSE") +
-		lipgloss.NewStyle().Foreground(components.ColorSubtle).Render(" AGENT")
+		lipgloss.NewStyle().Foreground(components.ColorSubtle).Render(" AGENT (F1) ")
 	clockStr := lipgloss.NewStyle().Foreground(components.ColorDim).Render(now) +
 		components.DimStyle.Render(fmt.Sprintf("  up %s", utils.FormatUptime(time.Since(m.startedAt))))
 
@@ -86,8 +86,21 @@ func (m Model) View() string {
 
 	content := top + header + "\n\n" + centeredCards + "\n" + mid + footer
 
-	return lipgloss.NewStyle().
-		Width(m.termW).
-		Height(m.termH).
-		Render(content)
+	// Wrap in terminal dimensions so bubbletea clears the full frame on resize.
+	frame := lipgloss.NewStyle().Width(m.termW).Height(m.termH).Render(content)
+
+	// Modal overlay — rendered AFTER the background frame using lipgloss.Place.
+	// lipgloss.Place understands ANSI codes and positions correctly, unlike
+	// raw string slicing which corrupts escape sequences.
+	if m.showInfo {
+		modal := components.InfoModal(m.modalScroll)
+		frame = lipgloss.Place(
+			m.termW, m.termH,
+			lipgloss.Center, lipgloss.Center,
+			modal,
+			lipgloss.WithWhitespaceBackground(components.ColorBg),
+		)
+	}
+
+	return frame
 }
