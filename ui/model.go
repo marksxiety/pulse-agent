@@ -9,15 +9,17 @@ import (
 )
 
 type Model struct {
-	CPU       models.CPUPayload
-	Mem       models.MemoryPayload
-	Disk      models.DiskPayload
-	cpuReady  bool
-	memReady  bool
-	diskReady bool
-	startedAt time.Time
-	termW     int
-	termH     int
+	CPU         models.CPUPayload
+	Mem         models.MemoryPayload
+	Disk        models.DiskPayload
+	cpuReady    bool
+	memReady    bool
+	diskReady   bool
+	startedAt   time.Time
+	termW       int
+	termH       int
+	showInfo    bool
+	modalScroll int
 
 	cpuHistory  *models.MetricHistory
 	memHistory  *models.MetricHistory
@@ -68,8 +70,29 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.KeyMsg:
+		// Always let ctrl+c / q quit regardless of modal state.
 		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
+		}
+		// Use msg.Type for special keys — terminals send escape sequences,
+		// not literal strings like "f1". msg.Type is what bubbletea parses
+		// those sequences into.
+		switch msg.Type {
+		case tea.KeyF1:
+			m.showInfo = !m.showInfo
+			if m.showInfo {
+				m.modalScroll = 0
+			}
+		case tea.KeyEsc, tea.KeyEnter:
+			m.showInfo = false
+		case tea.KeyUp:
+			if m.showInfo && m.modalScroll > 0 {
+				m.modalScroll--
+			}
+		case tea.KeyDown:
+			if m.showInfo {
+				m.modalScroll++
+			}
 		}
 	}
 	return m, nil
