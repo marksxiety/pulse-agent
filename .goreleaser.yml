@@ -30,21 +30,4 @@ checksum:
   name_template: checksums.txt
 
 changelog:
-  sort: asc
-  use: github
-  filters:
-    exclude:
-      - "^docs:"
-      - "^ci:"
-      - "^chore:"
-      - "^style:"
-      - "^refactor:"
-  groups:
-    - title: Features
-      regexp: "^.*feat[(\\w)]*:+.*$"
-      order: 0
-    - title: Bug Fixes
-      regexp: "^.*fix[(\\w)]*:+.*$"
-      order: 1
-    - title: Others
-      order: 999
+  disable: true
