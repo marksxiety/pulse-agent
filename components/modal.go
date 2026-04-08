@@ -23,7 +23,7 @@ func InfoModal(scroll int) string {
 
 	// Pinned header (never scrolls)
 	title := TitleStyle.Render("  Metric Glossary")
-	closeHint := TitleStyle.Render("F1 close")
+	closeHint := TitleStyle.Render("F1/Esc close")
 	hGap := modalInnerW - lipgloss.Width(title) - lipgloss.Width(closeHint)
 	if hGap < 1 {
 		hGap = 1
