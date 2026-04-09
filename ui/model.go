@@ -9,17 +9,18 @@ import (
 )
 
 type Model struct {
-	CPU         models.CPUPayload
-	Mem         models.MemoryPayload
-	Disk        models.DiskPayload
-	cpuReady    bool
-	memReady    bool
-	diskReady   bool
-	startedAt   time.Time
-	termW       int
-	termH       int
-	showInfo    bool
-	modalScroll int
+	CPU            models.CPUPayload
+	Mem            models.MemoryPayload
+	Disk           models.DiskPayload
+	cpuReady       bool
+	memReady       bool
+	diskReady      bool
+	startedAt      time.Time
+	termW          int
+	termH          int
+	showInfo       bool
+	modalScroll    int
+	showQuitDialog bool
 
 	cpuHistory  *models.MetricHistory
 	memHistory  *models.MetricHistory
@@ -70,20 +71,38 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.KeyMsg:
-		// Always let ctrl+c / q quit regardless of modal state.
-		if msg.String() == "q" || msg.String() == "ctrl+c" {
+		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
-		// Use msg.Type for special keys — terminals send escape sequences,
-		// not literal strings like "f1". msg.Type is what bubbletea parses
-		// those sequences into.
 		switch msg.Type {
+		case tea.KeyRunes:
+			if m.showQuitDialog || m.showInfo {
+				break
+			}
+			for _, r := range msg.String() {
+				if r == 'q' {
+					m.showQuitDialog = true
+					break
+				}
+			}
 		case tea.KeyF1:
+			if m.showQuitDialog {
+				break
+			}
 			m.showInfo = !m.showInfo
 			if m.showInfo {
 				m.modalScroll = 0
 			}
-		case tea.KeyEsc, tea.KeyEnter:
+		case tea.KeyEnter:
+			if m.showQuitDialog {
+				return m, tea.Quit
+			}
+			m.showInfo = false
+		case tea.KeyEsc:
+			if m.showQuitDialog {
+				m.showQuitDialog = false
+				break
+			}
 			m.showInfo = false
 		case tea.KeyUp:
 			if m.showInfo && m.modalScroll > 0 {
