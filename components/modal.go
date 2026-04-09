@@ -16,6 +16,27 @@ const (
 	modalBodyRows   = ModalHeight - 4 - modalPinnedRows // scrollable area height
 )
 
+func QuitConfirmModal() string {
+	dialogW := 44
+	dialogH := 7
+
+	title := lipgloss.NewStyle().Bold(true).Foreground(ColorWarn).Background(ColorSurface).Render("  Quit?")
+	body := lipgloss.NewStyle().Foreground(ColorText).Background(ColorSurface).Render("  Are you sure you want to quit?")
+	hint := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  enter confirm · esc cancel")
+
+	inner := title + "\n" + body + "\n" + hint
+
+	borderStyle := lipgloss.NewStyle().
+		Width(dialogW).
+		Height(dialogH).
+		Background(ColorSurface).
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(ColorWarn).
+		Padding(1, 2)
+
+	return borderStyle.Render(inner)
+}
+
 func InfoModal(scroll int) string {
 	trackStyle := lipgloss.NewStyle().Foreground(ColorMuted).Background(ColorSurface)
 
