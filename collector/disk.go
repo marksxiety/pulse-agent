@@ -5,15 +5,24 @@ import (
 	"log"
 	"pulse-agent/models"
 	"pulse-agent/types"
+	"runtime"
 	"time"
 )
 
 type DiskCollector struct {
-	sys SystemInfo
+	sys     SystemInfo
+	rootDir string
+}
+
+func diskRootPath() string {
+	if runtime.GOOS == "windows" {
+		return "C:\\"
+	}
+	return "/"
 }
 
 func NewDiskCollector(sys SystemInfo) DiskCollector {
-	return DiskCollector{sys: sys}
+	return DiskCollector{sys: sys, rootDir: diskRootPath()}
 }
 
 func (d DiskCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
@@ -22,7 +31,7 @@ func (d DiskCollector) Collect(ctx context.Context, ch chan<- models.Metric) {
 		case <-ctx.Done():
 			return
 		default:
-			usage, err := d.sys.DiskUsage("/")
+			usage, err := d.sys.DiskUsage(d.rootDir)
 			if err != nil {
 				log.Printf("Error occurred while collecting disk usage: %v", err)
 				time.Sleep(1 * time.Second)
