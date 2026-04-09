@@ -1,6 +1,32 @@
 # Changelog
 
-## [Unreleased]
+## [1.0.0] - 2026-04-09
+
+### Features
+- Quit confirmation dialog on `q` with Enter to confirm and Esc to cancel (Ctrl+C still quits immediately)
+- Cross-platform disk root path resolution in DiskCollector (Windows `/`, Linux `/`, macOS `/`)
+- Centralized `utils.Version` constant replacing hardcoded version strings across the codebase
+
+### Testing
+- External test suite for `models` (history, metric, payload) covering normalization, sparkline aggregation, threshold validation, and JSON serialization
+- External test suite for `collector` (disk, CPU, memory) covering path resolution, percentage calculations, and error handling
+- External test suite for `components` (modal, render, helpers) covering modal behavior, color formatting, and style application
+- External test suite for `utils` (format) covering byte/percentage formatting, progress bar generation, and threshold coloring
+
+### Documentation
+- Redesigned README with ASCII banner, badges, expanded component descriptions, and contributing section
+- Added setup guide (`docs/setup.md`) covering build, run, and keyboard controls
+- Added testing guide (`docs/tests.md`) covering test structure, strategy, and conventions
+- Removed standalone roadmap in favor of consolidated docs
+
+### CI/CD
+- Added GitHub Actions build workflow with cross-platform matrix (Linux, macOS, Windows × amd64, arm64)
+- Added GitHub Actions lint workflow with `go vet`, `gofmt`, and `golangci-lint` v1.64
+- Added GitHub Actions test workflow with coverage reporting
+- Configured GoReleaser to skip auto-changelog generation
+
+### Other
+- Added MIT license
 
 ## [0.1.0] - 2026-04-07
 
