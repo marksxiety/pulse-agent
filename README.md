@@ -1,17 +1,51 @@
-# Pulse-Agent
+<div align="center">
 
-A high-performance, concurrent system monitoring agent built with Go. Pulse-Agent demonstrates Go's native concurrency primitives for real-time observability — independent goroutines, a shared channel hub, and a single-threaded consumer.
+<pre>
+██████╗ ██╗   ██╗██╗     ███████╗███████╗     █████╗  ██████╗ ███████╗███╗   ██╗████████╗
+██╔══██╗██║   ██║██║     ██╔════╝██╔════╝    ██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝
+██████╔╝██║   ██║██║     ███████╗█████╗      ███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   
+██╔═══╝ ██║   ██║██║     ╚════██║██╔══╝      ██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   
+██║     ╚██████╔╝███████╗███████║███████╗    ██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   
+╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝    ╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   
+</pre>
 
-## Overview
+> **Real-time system monitoring agent for Windows — built on Go's native concurrency primitives.**
 
-Pulse-Agent is a lightweight heartbeat agent. Independent goroutines poll the OS for hardware metrics and stream them through a Go channel to a Bubble Tea terminal UI. Each collector runs its own polling loop with context-based cancellation for graceful shutdown.
+[![Go Version](https://img.shields.io/badge/go-1.21+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![Platform](https://img.shields.io/badge/platform-windows-0078D4?logo=windows&logoColor=white)](https://www.microsoft.com/windows)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+
+[![Lint](https://github.com/marksxiety/pulse-agent/actions/workflows/lint.yml/badge.svg)](https://github.com/marksxiety/pulse-agent/actions/workflows/lint.yml)
+[![Tests](https://github.com/marksxiety/pulse-agent/actions/workflows/tests.yml/badge.svg)](https://github.com/marksxiety/pulse-agent/actions/workflows/tests.yml)
+[![Build](https://github.com/marksxiety/pulse-agent/actions/workflows/build.yml/badge.svg)](https://github.com/marksxiety/pulse-agent/actions/workflows/build.yml)
+
+</div>
+
+---
+
+
+Pulse-Agent is a lightweight, high-performance heartbeat agent that polls OS hardware metrics and streams them in real time to a terminal UI. Independent goroutines collect CPU, memory, and disk data; a shared channel hub delivers every reading to a single-threaded consumer with no explicit locking.
+
+## Features
+
+- **Concurrent collectors** — CPU, memory, and disk each run in their own goroutine with independent polling intervals
+- **Lock-free transport** — an unbuffered Go channel eliminates data races between producers and consumer
+- **Live terminal UI** — progress bars, 3-hour sparkline trends, and a scrollable info modal via Bubble Tea
+- **Graceful shutdown** — SIGINT/SIGTERM triggers context cancellation; a WaitGroup waits for all collectors before teardown
+
+## Requirements
+
+| Requirement | Version |
+|-------------|---------|
+| Go | 1.21+ |
+| Windows | 10 (build 10586+) |
 
 ## Documentation
 
 | Doc | Description |
 |-----|-------------|
-| [Setup](docs/setup.md) | Clone, install dependencies, build, and run |
-| [Testing](docs/tests.md) | How to run tests and what's covered |
+| [SETUP](docs/setup.md) | Clone, install dependencies, build, and run |
+| [TESTING](docs/tests.md) | How to run tests and what is covered |
 
 ## Architecture
 
@@ -46,10 +80,27 @@ graph LR
     CH -- NewDataMsg --> UI
 ```
 
-### Key components
+## Key Components
 
-- **`Metric` struct** — A unified contract for all data points. Every collector produces one; the UI reads one.
-- **Go channel (hub)** — An unbuffered, thread-safe pipe between producers and consumer. Eliminates data races without explicit locking.
-- **Collectors** — Each collector runs its own polling loop using `time.Sleep` and `context.Done()` for cancellation. CPU and Memory poll every 2s, Disk every 1s.
-- **Bubble Tea UI** — The consumer renders three cards (CPU, Memory, Disk) with progress bars, 3-hour sparkline trends, and a scrollable info modal.
-- **Graceful shutdown** — SIGINT/SIGTERM triggers context cancellation, waits for all collectors to stop via `sync.WaitGroup`, then closes the channel and quits the UI.
+### Metric struct
+A unified data contract shared across the entire pipeline. Every collector produces one; the UI consumes one. Keeping this boundary explicit makes it straightforward to add new collectors without touching the UI layer.
+
+### Channel hub
+An unbuffered, thread-safe Go channel connects producers to the consumer. Backpressure is natural — a collector blocks until the UI is ready — and there is no need for mutexes or shared state.
+
+### Collectors
+Each collector is an independent goroutine running its own polling loop with context-based cancellation. CPU and memory fire every 2 seconds; disk fires every 1 second. All three stop cleanly on shutdown.
+
+### Bubble Tea UI
+The single consumer renders three dashboard cards (CPU, Memory, Disk) with live progress bars, 3-hour sparkline history, and a scrollable info modal.
+
+### Graceful shutdown
+On SIGINT or SIGTERM, the root context is cancelled. Each collector exits its loop, the WaitGroup drains, the channel closes, and the UI quits — in that order, every time.
+
+## Contributing
+
+Pull requests are welcome. Please open an issue first to discuss significant changes.
+
+## License
+
+[MIT](LICENSE)
