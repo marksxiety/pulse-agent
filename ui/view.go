@@ -61,7 +61,7 @@ func (m Model) View() string {
 	centeredCards := components.CentreBlock(cards, m.termW)
 
 	quitStr := components.FooterStyle.Render("  q  quit")
-	versionStr := components.DimStyle.Render("pulse-agent " + utils.Version)
+	versionStr := components.DimStyle.Render(utils.Version)
 	fGap := dashW - lipgloss.Width(quitStr) - lipgloss.Width(versionStr)
 	if fGap < 0 {
 		fGap = 0
@@ -98,6 +98,16 @@ func (m Model) View() string {
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
 			modal,
+			lipgloss.WithWhitespaceBackground(components.ColorBg),
+		)
+	}
+
+	if m.showQuitDialog {
+		dialog := components.QuitConfirmModal()
+		frame = lipgloss.Place(
+			m.termW, m.termH,
+			lipgloss.Center, lipgloss.Center,
+			dialog,
 			lipgloss.WithWhitespaceBackground(components.ColorBg),
 		)
 	}
