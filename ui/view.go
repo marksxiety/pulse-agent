@@ -61,7 +61,7 @@ func (m Model) View() string {
 	centeredCards := components.CentreBlock(cards, m.termW)
 
 	quitStr := components.FooterStyle.Render("  q  quit")
-	versionStr := components.DimStyle.Render("pulse-agent v0.1")
+	versionStr := components.DimStyle.Render("pulse-agent " + utils.Version)
 	fGap := dashW - lipgloss.Width(quitStr) - lipgloss.Width(versionStr)
 	if fGap < 0 {
 		fGap = 0
