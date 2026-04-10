@@ -23,6 +23,7 @@
 
 ---
 
+![Demo](assets/sample.png)
 
 Pulse-Agent is a lightweight, high-performance heartbeat agent that polls OS hardware metrics and streams them in real time to a terminal UI. Independent goroutines collect CPU, memory, and disk data; a shared channel hub delivers every reading to a single-threaded consumer with no explicit locking.
 
