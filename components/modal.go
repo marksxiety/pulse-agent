@@ -15,8 +15,8 @@ const (
 	modalPinnedRows = 2                                 // title row + blank divider, always visible
 	modalBodyRows   = ModalHeight - 4 - modalPinnedRows // scrollable area height
 
-	themeModalW = 36
-	themeModalH = 12
+	themeModalW = 42
+	themeModalH = 13
 )
 
 func QuitConfirmModal() string {
@@ -359,24 +359,24 @@ func ThemePickerModal(cursor int, currentTheme string) string {
 		Render(strings.Repeat("-", themeModalW-4))
 
 	var lines []string
+	innerW := themeModalW - 4
 	for i, name := range ThemeNames {
-		displayName := name
-		prefix := "  "
 		suffix := ""
 		if name == currentTheme {
 			suffix = " ●"
 		}
+		label := "  " + name + suffix
+		pad := innerW - lipgloss.Width(label)
+		if pad < 0 {
+			pad = 0
+		}
 		if i == cursor {
-			indicator := lipgloss.NewStyle().Foreground(ColorCPUAccent).Background(ColorSurface).Render("▸")
-			selected := lipgloss.NewStyle().Foreground(ColorText).Background(ColorSurface).Render(displayName + suffix)
-			check := ""
-			if name == currentTheme {
-				check = lipgloss.NewStyle().Foreground(ColorMemAccent).Background(ColorSurface).Render(" ●")
-			}
-			lines = append(lines, indicator+" "+selected+check)
+			accent := lipgloss.Color(GetTheme(name).CPUAccent)
+			highlighted := lipgloss.NewStyle().Background(accent).Foreground(ColorText).Render(label)
+			lines = append(lines, highlighted+lipgloss.NewStyle().Background(accent).Render(strings.Repeat(" ", pad)))
 		} else {
-			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render(prefix + displayName + suffix)
-			lines = append(lines, entry)
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render(label)
+			lines = append(lines, entry+lipgloss.NewStyle().Background(ColorSurface).Render(strings.Repeat(" ", pad)))
 		}
 	}
 
