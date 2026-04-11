@@ -19,6 +19,7 @@ var (
 	ColorDang lipgloss.Color
 
 	SparklineRunes []rune
+	ColorOverlay   lipgloss.Color
 )
 
 const (
@@ -47,6 +48,8 @@ func init() {
 func ApplyTheme(t Theme) {
 	ColorBg, ColorSurface, ColorBorder, ColorMuted, ColorSubtle, ColorText, ColorDim,
 		ColorCPUAccent, ColorMemAccent, ColorDiskAccent, ColorWarn, ColorDang = t.Colors()
+
+	ColorOverlay = lipgloss.Color("#06060a")
 
 	BaseCard = lipgloss.NewStyle().
 		Width(CardWidth).
