@@ -32,6 +32,7 @@ type Model struct {
 
 	showThemePicker bool
 	themeCursor     int
+	themeScroll     int
 }
 
 func InitialModel() Model {
@@ -104,20 +105,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case tea.KeyUp:
 				if m.themeCursor > 0 {
 					m.themeCursor--
+					if m.themeCursor < m.themeScroll {
+						m.themeScroll = m.themeCursor
+					}
 				}
 			case tea.KeyDown:
 				if m.themeCursor < len(components.ThemeNames)-1 {
 					m.themeCursor++
+					if m.themeCursor >= m.themeScroll+components.ThemeModalBodyRows {
+						m.themeScroll = m.themeCursor - components.ThemeModalBodyRows + 1
+					}
 				}
 			case tea.KeyRunes:
 				switch msg.String() {
 				case "k":
 					if m.themeCursor > 0 {
 						m.themeCursor--
+						if m.themeCursor < m.themeScroll {
+							m.themeScroll = m.themeCursor
+						}
 					}
 				case "j":
 					if m.themeCursor < len(components.ThemeNames)-1 {
 						m.themeCursor++
+						if m.themeCursor >= m.themeScroll+components.ThemeModalBodyRows {
+							m.themeScroll = m.themeCursor - components.ThemeModalBodyRows + 1
+						}
 					}
 				}
 			case tea.KeyEnter:
