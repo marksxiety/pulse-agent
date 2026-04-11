@@ -18,7 +18,7 @@ var (
 	ColorWarn lipgloss.Color
 	ColorDang lipgloss.Color
 
-	SparklineRunes = []rune("▁▂▃▄▅▆▇█")
+	SparklineRunes []rune
 )
 
 const (
@@ -52,7 +52,7 @@ func ApplyTheme(t Theme) {
 		Width(CardWidth).
 		Padding(1, 2).
 		Background(ColorSurface).
-		BorderStyle(lipgloss.RoundedBorder()).
+		BorderStyle(ActiveBorder()).
 		BorderForeground(ColorBorder)
 
 	TitleStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText)
