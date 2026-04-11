@@ -104,7 +104,7 @@ func (m Model) View() string {
 	}
 
 	if m.showQuitDialog {
-		dialog := components.QuitConfirmModal()
+		dialog := components.QuitConfirmModal(m.quitCursor)
 		frame = lipgloss.Place(
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
