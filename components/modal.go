@@ -346,22 +346,17 @@ func section(w int, accent lipgloss.Color, heading string, entries []metricEntry
 
 func ThemePickerModal(cursor int, currentTheme string) string {
 	title := TitleStyle.Render("  Theme")
-	closeHint := DimStyle.Render("esc close")
+	closeHint := TitleStyle.Render("esc close")
 	hGap := themeModalW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
 	if hGap < 1 {
 		hGap = 1
 	}
 	header := title + strings.Repeat(" ", hGap) + closeHint
 
-	sepChar := "-"
-	if termCap == TermNerdFont || termCap == TermUnicode {
-		sepChar = "─"
-	}
-
 	sep := lipgloss.NewStyle().
 		Foreground(ColorSubtle).
 		Background(ColorSurface).
-		Render(strings.Repeat(sepChar, themeModalW-4))
+		Render(strings.Repeat("-", themeModalW-4))
 
 	var lines []string
 	for i, name := range ThemeNames {
