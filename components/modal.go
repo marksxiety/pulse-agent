@@ -14,6 +14,9 @@ const (
 	modalInnerW     = ModalWidth - 4 - scrollBarW
 	modalPinnedRows = 2                                 // title row + blank divider, always visible
 	modalBodyRows   = ModalHeight - 4 - modalPinnedRows // scrollable area height
+
+	themeModalW = 36
+	themeModalH = 12
 )
 
 func QuitConfirmModal() string {
@@ -334,6 +337,58 @@ func section(w int, accent lipgloss.Color, heading string, entries []metricEntry
 		}
 	}
 	return lines
+}
+
+func ThemePickerModal(cursor int, currentTheme string) string {
+	title := TitleStyle.Render("  Theme")
+	closeHint := DimStyle.Render("esc close")
+	hGap := themeModalW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
+	if hGap < 1 {
+		hGap = 1
+	}
+	header := title + strings.Repeat(" ", hGap) + closeHint
+
+	sep := lipgloss.NewStyle().
+		Foreground(ColorSubtle).
+		Background(ColorSurface).
+		Render(strings.Repeat("─", themeModalW-4))
+
+	var lines []string
+	for i, name := range ThemeNames {
+		displayName := name
+		prefix := "  "
+		suffix := ""
+		if name == currentTheme {
+			suffix = " ●"
+		}
+		if i == cursor {
+			indicator := lipgloss.NewStyle().Foreground(ColorCPUAccent).Background(ColorSurface).Render("▸")
+			selected := lipgloss.NewStyle().Foreground(ColorText).Background(ColorSurface).Render(displayName + suffix)
+			check := ""
+			if name == currentTheme {
+				check = lipgloss.NewStyle().Foreground(ColorMemAccent).Background(ColorSurface).Render(" ●")
+			}
+			lines = append(lines, indicator+" "+selected+check)
+		} else {
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render(prefix + displayName + suffix)
+			lines = append(lines, entry)
+		}
+	}
+
+	body := strings.Join(lines, "\n")
+
+	inner := header + "\n" + sep + "\n" + body + "\n" + sep + "\n" +
+		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select")
+
+	borderStyle := lipgloss.NewStyle().
+		Width(themeModalW).
+		Height(themeModalH).
+		Background(ColorSurface).
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(ColorSubtle).
+		Padding(1, 2)
+
+	return borderStyle.Render(inner)
 }
 
 func wrapText(text string, maxLen int) []string {
