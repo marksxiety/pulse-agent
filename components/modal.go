@@ -19,22 +19,56 @@ const (
 	themeModalH = 13
 )
 
-func QuitConfirmModal() string {
-	dialogW := 44
-	dialogH := 7
+func QuitConfirmModal(cursor int) string {
+	dialogW := 42
+	dialogH := 10
 
-	title := lipgloss.NewStyle().Bold(true).Foreground(ColorWarn).Background(ColorSurface).Render("  Quit?")
+	title := TitleStyle.Render("  Quit?")
+	closeHint := TitleStyle.Render("esc close")
+	hGap := dialogW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
+	if hGap < 1 {
+		hGap = 1
+	}
+	header := title + strings.Repeat(" ", hGap) + closeHint
+
+	sep := lipgloss.NewStyle().
+		Foreground(ColorSubtle).
+		Background(ColorSurface).
+		Render(strings.Repeat("-", dialogW-4))
+
 	body := lipgloss.NewStyle().Foreground(ColorText).Background(ColorSurface).Render("  Are you sure you want to quit?")
-	hint := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  enter confirm · esc cancel")
 
-	inner := title + "\n" + body + "\n" + hint
+	options := []struct {
+		label  string
+		accent lipgloss.Color
+	}{
+		{"yes", ColorWarn},
+		{"no", ColorSubtle},
+	}
+
+	var lines []string
+	for i, opt := range options {
+		if i == cursor {
+			indicator := lipgloss.NewStyle().Foreground(opt.accent).Background(ColorSurface).Render("▸ ")
+			selected := lipgloss.NewStyle().Foreground(opt.accent).Background(ColorSurface).Render(opt.label)
+			lines = append(lines, indicator+selected)
+		} else {
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  " + opt.label)
+			lines = append(lines, entry)
+		}
+	}
+
+	choices := strings.Join(lines, "\n")
+
+	inner := header + "\n" + sep + "\n" + body + "\n" + choices + "\n" + sep + "\n" +
+		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select")
 
 	borderStyle := lipgloss.NewStyle().
 		Width(dialogW).
 		Height(dialogH).
 		Background(ColorSurface).
 		BorderStyle(lipgloss.RoundedBorder()).
-		BorderForeground(ColorWarn).
+		BorderForeground(ColorSubtle).
 		Padding(1, 2)
 
 	return borderStyle.Render(inner)
@@ -359,24 +393,19 @@ func ThemePickerModal(cursor int, currentTheme string) string {
 		Render(strings.Repeat("-", themeModalW-4))
 
 	var lines []string
-	innerW := themeModalW - 4
 	for i, name := range ThemeNames {
 		suffix := ""
 		if name == currentTheme {
 			suffix = " ●"
 		}
-		label := "  " + name + suffix
-		pad := innerW - lipgloss.Width(label)
-		if pad < 0 {
-			pad = 0
-		}
 		if i == cursor {
 			accent := lipgloss.Color(GetTheme(name).CPUAccent)
-			highlighted := lipgloss.NewStyle().Background(accent).Foreground(ColorText).Render(label)
-			lines = append(lines, highlighted+lipgloss.NewStyle().Background(accent).Render(strings.Repeat(" ", pad)))
+			indicator := lipgloss.NewStyle().Foreground(accent).Background(ColorSurface).Render("▸ ")
+			selected := lipgloss.NewStyle().Foreground(accent).Background(ColorSurface).Render(name + suffix)
+			lines = append(lines, indicator+selected)
 		} else {
-			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render(label)
-			lines = append(lines, entry+lipgloss.NewStyle().Background(ColorSurface).Render(strings.Repeat(" ", pad)))
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  " + name + suffix)
+			lines = append(lines, entry)
 		}
 	}
 
