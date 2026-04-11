@@ -42,7 +42,7 @@ var (
 )
 
 func init() {
-	ApplyTheme(CatppuccinMochaTheme)
+	ApplyTheme(OriginalTheme)
 }
 
 func ApplyTheme(t Theme) {
