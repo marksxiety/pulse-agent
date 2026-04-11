@@ -114,7 +114,7 @@ func (m Model) View() string {
 	}
 
 	if m.showThemePicker {
-		modal := components.ThemePickerModal(m.themeCursor, currentThemeName())
+		modal := components.ThemePickerModal(m.themeCursor, m.themeScroll, currentThemeName())
 		frame = lipgloss.Place(
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
