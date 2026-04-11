@@ -140,7 +140,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 				if r == 't' {
-					m.showThemePicker = true
+					m.showThemePicker = !m.showThemePicker
 					break
 				}
 			}
