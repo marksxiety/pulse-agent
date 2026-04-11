@@ -31,13 +31,14 @@ func ConfigPath() string {
 
 func GetConfig() Config {
 	cfgOnce.Do(func() {
-		cfg = Config{Theme: "catppuccin-mocha"}
+		if cfg.Theme == "" {
+			cfg = Config{Theme: "original"}
+		}
 	})
 	return cfg
 }
 
 func SaveTheme(name string) error {
-	cfg = GetConfig()
 	cfg.Theme = name
 
 	dir := ConfigDir()
@@ -53,7 +54,7 @@ func LoadConfig() error {
 	data, err := os.ReadFile(ConfigPath())
 	if err != nil {
 		if os.IsNotExist(err) {
-			cfg = Config{Theme: "catppuccin-mocha"}
+			cfg = Config{Theme: "original"}
 			return nil
 		}
 		return err
@@ -63,7 +64,7 @@ func LoadConfig() error {
 	if theme != "" {
 		cfg = Config{Theme: theme}
 	} else {
-		cfg = Config{Theme: "catppuccin-mocha"}
+		cfg = Config{Theme: "original"}
 	}
 	return nil
 }
