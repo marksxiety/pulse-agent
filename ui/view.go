@@ -61,12 +61,13 @@ func (m Model) View() string {
 	centeredCards := components.CentreBlock(cards, m.termW)
 
 	quitStr := components.FooterStyle.Render("  q  quit")
+	themeStr := components.FooterStyle.Render(fmt.Sprintf("  t  theme [%s]", currentThemeName()))
 	versionStr := components.DimStyle.Render(utils.Version)
-	fGap := dashW - lipgloss.Width(quitStr) - lipgloss.Width(versionStr)
+	fGap := dashW - lipgloss.Width(quitStr) - lipgloss.Width(themeStr) - lipgloss.Width(versionStr)
 	if fGap < 0 {
 		fGap = 0
 	}
-	footer := components.CentreBlock(quitStr+strings.Repeat(" ", fGap)+versionStr, m.termW)
+	footer := components.CentreBlock(quitStr+strings.Repeat(" ", fGap/2)+themeStr+strings.Repeat(" ", fGap-fGap/2)+versionStr, m.termW)
 
 	headerLines := 1
 	cardBlockLines := lipgloss.Height(centeredCards)
@@ -108,6 +109,16 @@ func (m Model) View() string {
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
 			dialog,
+			lipgloss.WithWhitespaceBackground(components.ColorBg),
+		)
+	}
+
+	if m.showThemePicker {
+		modal := components.ThemePickerModal(m.themeCursor, currentThemeName())
+		frame = lipgloss.Place(
+			m.termW, m.termH,
+			lipgloss.Center, lipgloss.Center,
+			modal,
 			lipgloss.WithWhitespaceBackground(components.ColorBg),
 		)
 	}
