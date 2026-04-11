@@ -27,7 +27,7 @@ func cardHeader(icon, title, badge string, accent lipgloss.Color) string {
 
 func CPUCard(ready bool, cpu models.CPUPayload, history *models.MetricHistory) string {
 	accent := ColorCPUAccent
-	header := cardHeader("󰻠 ", "CPU", "PROCESSOR", accent)
+	header := cardHeader(cardIcons.CPU, "CPU", "PROCESSOR", accent)
 	sparkW := CardWidth - 4
 
 	var lines []string
@@ -62,7 +62,7 @@ func CPUCard(ready bool, cpu models.CPUPayload, history *models.MetricHistory) s
 
 func MemCard(ready bool, mem models.MemoryPayload, history *models.MetricHistory) string {
 	accent := ColorMemAccent
-	header := cardHeader("󰍛 ", "Memory", "RAM", accent)
+	header := cardHeader(cardIcons.Mem, "Memory", "RAM", accent)
 	sparkW := CardWidth - 4
 
 	var lines []string
@@ -100,7 +100,7 @@ func MemCard(ready bool, mem models.MemoryPayload, history *models.MetricHistory
 
 func DiskCard(ready bool, disk models.DiskPayload, history *models.MetricHistory) string {
 	accent := ColorDiskAccent
-	header := cardHeader("󰋊 ", "Disk", "STORAGE", accent)
+	header := cardHeader(cardIcons.Disk, "Disk", "STORAGE", accent)
 	sparkW := CardWidth - 4
 
 	var lines []string

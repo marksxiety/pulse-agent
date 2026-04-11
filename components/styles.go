@@ -3,22 +3,23 @@ package components
 import "github.com/charmbracelet/lipgloss"
 
 var (
-	ColorBg      = lipgloss.Color("#0d0f14")
-	ColorSurface = lipgloss.Color("#141720")
-	ColorBorder  = lipgloss.Color("#1e2330")
-	ColorMuted   = lipgloss.Color("#3b4260")
-	ColorSubtle  = lipgloss.Color("#6272a4")
-	ColorText    = lipgloss.Color("#cdd6f4")
-	ColorDim     = lipgloss.Color("#585b70")
+	ColorBg      lipgloss.Color
+	ColorSurface lipgloss.Color
+	ColorBorder  lipgloss.Color
+	ColorMuted   lipgloss.Color
+	ColorSubtle  lipgloss.Color
+	ColorText    lipgloss.Color
+	ColorDim     lipgloss.Color
 
-	ColorCPUAccent  = lipgloss.Color("#89b4fa")
-	ColorMemAccent  = lipgloss.Color("#a6e3a1")
-	ColorDiskAccent = lipgloss.Color("#cba6f7")
+	ColorCPUAccent  lipgloss.Color
+	ColorMemAccent  lipgloss.Color
+	ColorDiskAccent lipgloss.Color
 
-	ColorWarn = lipgloss.Color("#f9e2af")
-	ColorDang = lipgloss.Color("#f38ba8")
+	ColorWarn lipgloss.Color
+	ColorDang lipgloss.Color
 
-	SparklineRunes = []rune("▁▂▃▄▅▆▇█")
+	SparklineRunes []rune
+	ColorOverlay   lipgloss.Color
 )
 
 const (
@@ -31,17 +32,36 @@ const (
 )
 
 var (
-	BaseCard = lipgloss.NewStyle().
-			Width(CardWidth).
-			Padding(1, 2).
-			Background(ColorSurface).
-			BorderStyle(lipgloss.RoundedBorder()).
-			BorderForeground(ColorBorder)
+	BaseCard    lipgloss.Style
+	TitleStyle  lipgloss.Style
+	LabelStyle  lipgloss.Style
+	ValueStyle  lipgloss.Style
+	DimStyle    lipgloss.Style
+	HeaderStyle lipgloss.Style
+	FooterStyle lipgloss.Style
+)
 
-	TitleStyle  = lipgloss.NewStyle().Bold(true).Foreground(ColorText)
-	LabelStyle  = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Background(ColorSurface)
-	ValueStyle  = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Background(ColorSurface)
-	DimStyle    = lipgloss.NewStyle().Foreground(ColorDim)
+func init() {
+	ApplyTheme(OriginalTheme)
+}
+
+func ApplyTheme(t Theme) {
+	ColorBg, ColorSurface, ColorBorder, ColorMuted, ColorSubtle, ColorText, ColorDim,
+		ColorCPUAccent, ColorMemAccent, ColorDiskAccent, ColorWarn, ColorDang = t.Colors()
+
+	ColorOverlay = lipgloss.Color("#06060a")
+
+	BaseCard = lipgloss.NewStyle().
+		Width(CardWidth).
+		Padding(1, 2).
+		Background(ColorSurface).
+		BorderStyle(ActiveBorder()).
+		BorderForeground(ColorBorder)
+
+	TitleStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText)
+	LabelStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Background(ColorSurface)
+	ValueStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Background(ColorSurface)
+	DimStyle = lipgloss.NewStyle().Foreground(ColorDim)
 	HeaderStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Padding(0, 1)
 	FooterStyle = lipgloss.NewStyle().Foreground(ColorDim).Padding(0, 1)
-)
+}

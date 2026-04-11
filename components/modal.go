@@ -14,24 +14,62 @@ const (
 	modalInnerW     = ModalWidth - 4 - scrollBarW
 	modalPinnedRows = 2                                 // title row + blank divider, always visible
 	modalBodyRows   = ModalHeight - 4 - modalPinnedRows // scrollable area height
+
+	themeModalW        = 42
+	themeModalH        = 16
+	ThemeModalBodyRows = 8
 )
 
-func QuitConfirmModal() string {
-	dialogW := 44
-	dialogH := 7
+func QuitConfirmModal(cursor int) string {
+	dialogW := 42
+	dialogH := 10
 
-	title := lipgloss.NewStyle().Bold(true).Foreground(ColorWarn).Background(ColorSurface).Render("  Quit?")
+	title := TitleStyle.Render("  Quit?")
+	closeHint := TitleStyle.Render("esc close")
+	hGap := dialogW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
+	if hGap < 1 {
+		hGap = 1
+	}
+	header := title + strings.Repeat(" ", hGap) + closeHint
+
+	sep := lipgloss.NewStyle().
+		Foreground(ColorSubtle).
+		Background(ColorSurface).
+		Render(strings.Repeat("-", dialogW-4))
+
 	body := lipgloss.NewStyle().Foreground(ColorText).Background(ColorSurface).Render("  Are you sure you want to quit?")
-	hint := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  enter confirm · esc cancel")
 
-	inner := title + "\n" + body + "\n" + hint
+	options := []struct {
+		label  string
+		accent lipgloss.Color
+	}{
+		{"yes", ColorWarn},
+		{"no", ColorSubtle},
+	}
+
+	var lines []string
+	for i, opt := range options {
+		if i == cursor {
+			indicator := lipgloss.NewStyle().Foreground(opt.accent).Background(ColorSurface).Render("▸ ")
+			selected := lipgloss.NewStyle().Foreground(opt.accent).Background(ColorSurface).Render(opt.label)
+			lines = append(lines, indicator+selected)
+		} else {
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  " + opt.label)
+			lines = append(lines, entry)
+		}
+	}
+
+	choices := strings.Join(lines, "\n")
+
+	inner := header + "\n" + sep + "\n" + body + "\n" + choices + "\n" + sep + "\n" +
+		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select")
 
 	borderStyle := lipgloss.NewStyle().
 		Width(dialogW).
 		Height(dialogH).
 		Background(ColorSurface).
 		BorderStyle(lipgloss.RoundedBorder()).
-		BorderForeground(ColorWarn).
+		BorderForeground(ColorSubtle).
 		Padding(1, 2)
 
 	return borderStyle.Render(inner)
@@ -294,11 +332,16 @@ func verticalScrollbar(scroll, totalLines, visibleRows int) []string {
 		thumbTop = scroll * (visibleRows - thumbH) / maxScroll
 	}
 
+	thumbChar, trackChar := "#", "-"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		thumbChar, trackChar = "█", "░"
+	}
+
 	for i := range gutter {
 		if i >= thumbTop && i < thumbTop+thumbH {
-			gutter[i] = thumbStyle.Render("█")
+			gutter[i] = thumbStyle.Render(thumbChar)
 		} else {
-			gutter[i] = trackStyle.Render("░")
+			gutter[i] = trackStyle.Render(trackChar)
 		}
 	}
 	return gutter
@@ -334,6 +377,86 @@ func section(w int, accent lipgloss.Color, heading string, entries []metricEntry
 		}
 	}
 	return lines
+}
+
+func ThemePickerModal(cursor, scroll int, currentTheme string) string {
+	title := TitleStyle.Render("  Theme")
+	closeHint := TitleStyle.Render("esc close")
+	hGap := themeModalW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
+	if hGap < 1 {
+		hGap = 1
+	}
+	header := title + strings.Repeat(" ", hGap) + closeHint
+
+	sep := lipgloss.NewStyle().
+		Foreground(ColorSubtle).
+		Background(ColorSurface).
+		Render(strings.Repeat("-", themeModalW-4))
+
+	total := len(ThemeNames)
+	maxScroll := total - ThemeModalBodyRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if scroll > maxScroll {
+		scroll = maxScroll
+	}
+	if scroll < 0 {
+		scroll = 0
+	}
+	if cursor < scroll {
+		scroll = cursor
+	}
+	if cursor >= scroll+ThemeModalBodyRows {
+		scroll = cursor - ThemeModalBodyRows + 1
+	}
+
+	end := scroll + ThemeModalBodyRows
+	if end > total {
+		end = total
+	}
+
+	var lines []string
+	for i := scroll; i < end; i++ {
+		name := ThemeNames[i]
+		suffix := ""
+		if name == currentTheme {
+			suffix = " ●"
+		}
+		if i == cursor {
+			accent := lipgloss.Color(GetTheme(name).CPUAccent)
+			indicator := lipgloss.NewStyle().Foreground(accent).Background(ColorSurface).Render("▸ ")
+			selected := lipgloss.NewStyle().Foreground(accent).Background(ColorSurface).Render(name + suffix)
+			lines = append(lines, indicator+selected)
+		} else {
+			entry := lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  " + name + suffix)
+			lines = append(lines, entry)
+		}
+	}
+
+	for len(lines) < ThemeModalBodyRows {
+		lines = append(lines, strings.Repeat(" ", themeModalW-4))
+	}
+
+	scrollHint := ""
+	if total > ThemeModalBodyRows {
+		scrollHint = fmt.Sprintf(" [%d/%d]", scroll+1, maxScroll+1)
+	}
+
+	body := strings.Join(lines, "\n")
+
+	inner := header + "\n" + sep + "\n" + body + "\n" + sep + "\n" +
+		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select"+scrollHint)
+
+	borderStyle := lipgloss.NewStyle().
+		Width(themeModalW).
+		Height(themeModalH).
+		Background(ColorSurface).
+		BorderStyle(lipgloss.RoundedBorder()).
+		BorderForeground(ColorSubtle).
+		Padding(1, 2)
+
+	return borderStyle.Render(inner)
 }
 
 func wrapText(text string, maxLen int) []string {

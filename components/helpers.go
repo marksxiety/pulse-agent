@@ -47,7 +47,11 @@ func Row(label, val string) string {
 }
 
 func Separator(c lipgloss.Color) string {
-	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat("─", CardWidth-4))
+	ch := "-"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		ch = "─"
+	}
+	return lipgloss.NewStyle().Foreground(c).Render(strings.Repeat(ch, CardWidth-4))
 }
 
 func OverflowGuard(lines []string, maxLines int) []string {
@@ -55,6 +59,10 @@ func OverflowGuard(lines []string, maxLines int) []string {
 		return lines
 	}
 	hidden := len(lines) - (maxLines - 1)
+	arrow := "v"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		arrow = "↕"
+	}
 	clipped := lines[:maxLines-1]
-	return append(clipped, DimStyle.Render(fmt.Sprintf("  ↕  %d lines hidden", hidden)))
+	return append(clipped, DimStyle.Render(fmt.Sprintf("  %s  %d lines hidden", arrow, hidden)))
 }

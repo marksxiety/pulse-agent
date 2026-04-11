@@ -3,7 +3,9 @@ package ui
 import (
 	"time"
 
+	"pulse-agent/components"
 	"pulse-agent/models"
+	"pulse-agent/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -21,14 +23,29 @@ type Model struct {
 	showInfo       bool
 	modalScroll    int
 	showQuitDialog bool
+	quitCursor     int
 
 	cpuHistory  *models.MetricHistory
 	memHistory  *models.MetricHistory
 	diskHistory *models.MetricHistory
 	lastSample  time.Time
+
+	showThemePicker bool
+	themeCursor     int
+	themeScroll     int
 }
 
 func InitialModel() Model {
+	cfg := utils.GetConfig()
+
+	themeCursor := 0
+	for i, name := range components.ThemeNames {
+		if name == cfg.Theme {
+			themeCursor = i
+			break
+		}
+	}
+
 	return Model{
 		termW:       120,
 		termH:       40,
@@ -36,10 +53,16 @@ func InitialModel() Model {
 		cpuHistory:  models.NewMetricHistory(),
 		memHistory:  models.NewMetricHistory(),
 		diskHistory: models.NewMetricHistory(),
+		themeCursor: themeCursor,
 	}
 }
 
-func (m Model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd {
+	cfg := utils.GetConfig()
+	theme := components.GetTheme(cfg.Theme)
+	components.ApplyTheme(theme)
+	return nil
+}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -74,16 +97,82 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
+
+		if m.showThemePicker {
+			switch msg.Type {
+			case tea.KeyEsc:
+				m.showThemePicker = false
+			case tea.KeyUp:
+				if m.themeCursor > 0 {
+					m.themeCursor--
+					if m.themeCursor < m.themeScroll {
+						m.themeScroll = m.themeCursor
+					}
+				}
+			case tea.KeyDown:
+				if m.themeCursor < len(components.ThemeNames)-1 {
+					m.themeCursor++
+					if m.themeCursor >= m.themeScroll+components.ThemeModalBodyRows {
+						m.themeScroll = m.themeCursor - components.ThemeModalBodyRows + 1
+					}
+				}
+			case tea.KeyRunes:
+				switch msg.String() {
+				case "k":
+					if m.themeCursor > 0 {
+						m.themeCursor--
+						if m.themeCursor < m.themeScroll {
+							m.themeScroll = m.themeCursor
+						}
+					}
+				case "j":
+					if m.themeCursor < len(components.ThemeNames)-1 {
+						m.themeCursor++
+						if m.themeCursor >= m.themeScroll+components.ThemeModalBodyRows {
+							m.themeScroll = m.themeCursor - components.ThemeModalBodyRows + 1
+						}
+					}
+				}
+			case tea.KeyEnter:
+				selected := components.ThemeNames[m.themeCursor]
+				theme := components.GetTheme(selected)
+				components.ApplyTheme(theme)
+				if err := utils.SaveTheme(selected); err != nil {
+					m.showThemePicker = false
+					return m, tea.Batch()
+				}
+				m.showThemePicker = false
+			}
+			return m, nil
+		}
+
 		switch msg.Type {
-		case tea.KeyRunes:
-			if m.showQuitDialog || m.showInfo {
+		case tea.KeyEsc:
+			if m.showQuitDialog {
+				m.showQuitDialog = false
+				m.quitCursor = 0
 				break
 			}
-			for _, r := range msg.String() {
-				if r == 'q' {
-					m.showQuitDialog = true
-					break
+			m.showInfo = false
+		case tea.KeyUp:
+			if m.showQuitDialog {
+				if m.quitCursor > 0 {
+					m.quitCursor--
 				}
+				break
+			}
+			if m.showInfo && m.modalScroll > 0 {
+				m.modalScroll--
+			}
+		case tea.KeyDown:
+			if m.showQuitDialog {
+				if m.quitCursor < 1 {
+					m.quitCursor++
+				}
+				break
+			}
+			if m.showInfo {
+				m.modalScroll++
 			}
 		case tea.KeyF1:
 			if m.showQuitDialog {
@@ -93,26 +182,50 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.showInfo {
 				m.modalScroll = 0
 			}
+		case tea.KeyRunes:
+			if m.showQuitDialog {
+				switch msg.String() {
+				case "k":
+					if m.quitCursor > 0 {
+						m.quitCursor--
+					}
+				case "j":
+					if m.quitCursor < 1 {
+						m.quitCursor++
+					}
+				}
+				break
+			}
+			if m.showInfo {
+				break
+			}
+			for _, r := range msg.String() {
+				if r == 'q' {
+					m.showQuitDialog = true
+					m.quitCursor = 0
+					break
+				}
+				if r == 't' {
+					m.showThemePicker = !m.showThemePicker
+					break
+				}
+			}
 		case tea.KeyEnter:
 			if m.showQuitDialog {
-				return m, tea.Quit
-			}
-			m.showInfo = false
-		case tea.KeyEsc:
-			if m.showQuitDialog {
+				if m.quitCursor == 0 {
+					return m, tea.Quit
+				}
 				m.showQuitDialog = false
+				m.quitCursor = 0
 				break
 			}
 			m.showInfo = false
-		case tea.KeyUp:
-			if m.showInfo && m.modalScroll > 0 {
-				m.modalScroll--
-			}
-		case tea.KeyDown:
-			if m.showInfo {
-				m.modalScroll++
-			}
 		}
 	}
 	return m, nil
+}
+
+func currentThemeName() string {
+	cfg := utils.GetConfig()
+	return cfg.Theme
 }
