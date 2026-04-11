@@ -3,7 +3,9 @@ package ui
 import (
 	"time"
 
+	"pulse-agent/components"
 	"pulse-agent/models"
+	"pulse-agent/utils"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -26,9 +28,22 @@ type Model struct {
 	memHistory  *models.MetricHistory
 	diskHistory *models.MetricHistory
 	lastSample  time.Time
+
+	showThemePicker bool
+	themeCursor     int
 }
 
 func InitialModel() Model {
+	cfg := utils.GetConfig()
+
+	themeCursor := 0
+	for i, name := range components.ThemeNames {
+		if name == cfg.Theme {
+			themeCursor = i
+			break
+		}
+	}
+
 	return Model{
 		termW:       120,
 		termH:       40,
@@ -36,10 +51,16 @@ func InitialModel() Model {
 		cpuHistory:  models.NewMetricHistory(),
 		memHistory:  models.NewMetricHistory(),
 		diskHistory: models.NewMetricHistory(),
+		themeCursor: themeCursor,
 	}
 }
 
-func (m Model) Init() tea.Cmd { return nil }
+func (m Model) Init() tea.Cmd {
+	cfg := utils.GetConfig()
+	theme := components.GetTheme(cfg.Theme)
+	components.ApplyTheme(theme)
+	return nil
+}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -74,6 +95,40 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
+
+		if m.showThemePicker {
+			switch msg.Type {
+			case tea.KeyEsc:
+				m.showThemePicker = false
+			case tea.KeyUp:
+				if m.themeCursor > 0 {
+					m.themeCursor--
+				}
+			case tea.KeyDown:
+				if m.themeCursor < len(components.ThemeNames)-1 {
+					m.themeCursor++
+				}
+			case tea.KeyRunes:
+				switch msg.String() {
+				case "k":
+					if m.themeCursor > 0 {
+						m.themeCursor--
+					}
+				case "j":
+					if m.themeCursor < len(components.ThemeNames)-1 {
+						m.themeCursor++
+					}
+				}
+			case tea.KeyEnter:
+				selected := components.ThemeNames[m.themeCursor]
+				theme := components.GetTheme(selected)
+				components.ApplyTheme(theme)
+				utils.SaveTheme(selected)
+				m.showThemePicker = false
+			}
+			return m, nil
+		}
+
 		switch msg.Type {
 		case tea.KeyRunes:
 			if m.showQuitDialog || m.showInfo {
@@ -82,6 +137,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			for _, r := range msg.String() {
 				if r == 'q' {
 					m.showQuitDialog = true
+					break
+				}
+				if r == 't' {
+					m.showThemePicker = true
 					break
 				}
 			}
@@ -115,4 +174,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 	return m, nil
+}
+
+func currentThemeName() string {
+	cfg := utils.GetConfig()
+	return cfg.Theme
 }
