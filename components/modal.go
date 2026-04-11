@@ -15,8 +15,9 @@ const (
 	modalPinnedRows = 2                                 // title row + blank divider, always visible
 	modalBodyRows   = ModalHeight - 4 - modalPinnedRows // scrollable area height
 
-	themeModalW = 42
-	themeModalH = 13
+	themeModalW        = 42
+	themeModalH        = 16
+	ThemeModalBodyRows = 8
 )
 
 func QuitConfirmModal(cursor int) string {
@@ -378,7 +379,7 @@ func section(w int, accent lipgloss.Color, heading string, entries []metricEntry
 	return lines
 }
 
-func ThemePickerModal(cursor int, currentTheme string) string {
+func ThemePickerModal(cursor, scroll int, currentTheme string) string {
 	title := TitleStyle.Render("  Theme")
 	closeHint := TitleStyle.Render("esc close")
 	hGap := themeModalW - 4 - lipgloss.Width(title) - lipgloss.Width(closeHint)
@@ -392,8 +393,32 @@ func ThemePickerModal(cursor int, currentTheme string) string {
 		Background(ColorSurface).
 		Render(strings.Repeat("-", themeModalW-4))
 
+	total := len(ThemeNames)
+	maxScroll := total - ThemeModalBodyRows
+	if maxScroll < 0 {
+		maxScroll = 0
+	}
+	if scroll > maxScroll {
+		scroll = maxScroll
+	}
+	if scroll < 0 {
+		scroll = 0
+	}
+	if cursor < scroll {
+		scroll = cursor
+	}
+	if cursor >= scroll+ThemeModalBodyRows {
+		scroll = cursor - ThemeModalBodyRows + 1
+	}
+
+	end := scroll + ThemeModalBodyRows
+	if end > total {
+		end = total
+	}
+
 	var lines []string
-	for i, name := range ThemeNames {
+	for i := scroll; i < end; i++ {
+		name := ThemeNames[i]
 		suffix := ""
 		if name == currentTheme {
 			suffix = " ●"
@@ -409,10 +434,19 @@ func ThemePickerModal(cursor int, currentTheme string) string {
 		}
 	}
 
+	for len(lines) < ThemeModalBodyRows {
+		lines = append(lines, strings.Repeat(" ", themeModalW-4))
+	}
+
+	scrollHint := ""
+	if total > ThemeModalBodyRows {
+		scrollHint = fmt.Sprintf(" [%d/%d]", scroll+1, maxScroll+1)
+	}
+
 	body := strings.Join(lines, "\n")
 
 	inner := header + "\n" + sep + "\n" + body + "\n" + sep + "\n" +
-		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select")
+		lipgloss.NewStyle().Foreground(ColorDim).Background(ColorSurface).Render("  ↑↓ navigate · enter select"+scrollHint)
 
 	borderStyle := lipgloss.NewStyle().
 		Width(themeModalW).
