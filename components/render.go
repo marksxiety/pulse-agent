@@ -20,8 +20,13 @@ func ProgressBar(pct float64, width int, accent lipgloss.Color) string {
 		barColor = ColorWarn
 	}
 
-	bar := lipgloss.NewStyle().Foreground(barColor).Render(strings.Repeat("█", filled)) +
-		lipgloss.NewStyle().Foreground(ColorMuted).Render(strings.Repeat("░", empty))
+	barFilled, barEmpty := "#", "-"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		barFilled, barEmpty = "█", "░"
+	}
+
+	bar := lipgloss.NewStyle().Foreground(barColor).Render(strings.Repeat(barFilled, filled)) +
+		lipgloss.NewStyle().Foreground(ColorMuted).Render(strings.Repeat(barEmpty, empty))
 	pctStr := lipgloss.NewStyle().Foreground(barColor).Bold(true).Render(fmt.Sprintf("%5.1f%%", pct))
 	return bar + " " + pctStr
 }
