@@ -297,11 +297,16 @@ func verticalScrollbar(scroll, totalLines, visibleRows int) []string {
 		thumbTop = scroll * (visibleRows - thumbH) / maxScroll
 	}
 
+	thumbChar, trackChar := "#", "-"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		thumbChar, trackChar = "█", "░"
+	}
+
 	for i := range gutter {
 		if i >= thumbTop && i < thumbTop+thumbH {
-			gutter[i] = thumbStyle.Render("█")
+			gutter[i] = thumbStyle.Render(thumbChar)
 		} else {
-			gutter[i] = trackStyle.Render("░")
+			gutter[i] = trackStyle.Render(trackChar)
 		}
 	}
 	return gutter
@@ -348,10 +353,15 @@ func ThemePickerModal(cursor int, currentTheme string) string {
 	}
 	header := title + strings.Repeat(" ", hGap) + closeHint
 
+	sepChar := "-"
+	if termCap == TermNerdFont || termCap == TermUnicode {
+		sepChar = "─"
+	}
+
 	sep := lipgloss.NewStyle().
 		Foreground(ColorSubtle).
 		Background(ColorSurface).
-		Render(strings.Repeat("─", themeModalW-4))
+		Render(strings.Repeat(sepChar, themeModalW-4))
 
 	var lines []string
 	for i, name := range ThemeNames {
