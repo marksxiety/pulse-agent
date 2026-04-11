@@ -8,6 +8,7 @@ import (
 	"pulse-agent/collector"
 	"pulse-agent/models"
 	"pulse-agent/ui"
+	"pulse-agent/utils"
 	"sync"
 	"syscall"
 
@@ -17,6 +18,8 @@ import (
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
+
+	utils.LoadConfig()
 
 	dataPipe := make(chan models.Metric)
 	live := collector.LiveSystemInfo{}
