@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"pulse-agent/collector"
@@ -19,7 +20,9 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	utils.LoadConfig()
+	if err := utils.LoadConfig(); err != nil {
+		log.Fatalf("failed to load config: %v", err)
+	}
 
 	dataPipe := make(chan models.Metric)
 	live := collector.LiveSystemInfo{}
