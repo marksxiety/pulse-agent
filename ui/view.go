@@ -99,7 +99,7 @@ func (m Model) View() string {
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
 			modal,
-			lipgloss.WithWhitespaceBackground(components.ColorBg),
+			lipgloss.WithWhitespaceBackground(components.ColorOverlay),
 		)
 	}
 
@@ -109,7 +109,7 @@ func (m Model) View() string {
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
 			dialog,
-			lipgloss.WithWhitespaceBackground(components.ColorBg),
+			lipgloss.WithWhitespaceBackground(components.ColorOverlay),
 		)
 	}
 
@@ -119,7 +119,7 @@ func (m Model) View() string {
 			m.termW, m.termH,
 			lipgloss.Center, lipgloss.Center,
 			modal,
-			lipgloss.WithWhitespaceBackground(components.ColorBg),
+			lipgloss.WithWhitespaceBackground(components.ColorOverlay),
 		)
 	}
 
