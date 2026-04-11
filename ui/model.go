@@ -137,7 +137,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selected := components.ThemeNames[m.themeCursor]
 				theme := components.GetTheme(selected)
 				components.ApplyTheme(theme)
-				utils.SaveTheme(selected)
+				if err := utils.SaveTheme(selected); err != nil {
+					m.showThemePicker = false
+					return m, tea.Batch()
+				}
 				m.showThemePicker = false
 			}
 			return m, nil
