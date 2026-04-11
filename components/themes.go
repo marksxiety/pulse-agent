@@ -25,12 +25,34 @@ func (t Theme) Colors() (bg, surface, border, muted, subtle, text, dim, cpu, mem
 		lipgloss.Color(t.Warn), lipgloss.Color(t.Danger)
 }
 
+var OriginalTheme = Theme{
+	Name:       "original",
+	Bg:         "#0d0f14",
+	Surface:    "#141720",
+	Border:     "#1e2330",
+	Muted:      "#3b4260",
+	Subtle:     "#6272a4",
+	Text:       "#cdd6f4",
+	Dim:        "#585b70",
+	CPUAccent:  "#89b4fa",
+	MemAccent:  "#a6e3a1",
+	DiskAccent: "#cba6f7",
+	Warn:       "#f9e2af",
+	Danger:     "#f38ba8",
+}
+
 var ThemePresets = []Theme{
+	OriginalTheme,
 	CatppuccinMochaTheme,
 	DraculaTheme,
 	NordTheme,
 	GruvboxTheme,
 	TokyoNightTheme,
+	OneDarkProTheme,
+	GitHubDarkTheme,
+	AyuMirageTheme,
+	MonokaiProTheme,
+	SynthwaveTheme,
 }
 
 var ThemeNames []string
@@ -48,7 +70,7 @@ func GetTheme(name string) Theme {
 			return t
 		}
 	}
-	return CatppuccinMochaTheme
+	return OriginalTheme
 }
 
 var CatppuccinMochaTheme = Theme{
@@ -129,4 +151,84 @@ var TokyoNightTheme = Theme{
 	DiskAccent: "#bb9af7",
 	Warn:       "#e0af68",
 	Danger:     "#f7768e",
+}
+
+var OneDarkProTheme = Theme{
+	Name:       "one-dark-pro",
+	Bg:         "#21252b",
+	Surface:    "#282c34",
+	Border:     "#3e4451",
+	Muted:      "#3e4451",
+	Subtle:     "#5c6370",
+	Text:       "#abb2bf",
+	Dim:        "#4b5263",
+	CPUAccent:  "#61afef",
+	MemAccent:  "#98c379",
+	DiskAccent: "#c678dd",
+	Warn:       "#e5c07b",
+	Danger:     "#e06c75",
+}
+
+var GitHubDarkTheme = Theme{
+	Name:       "github-dark",
+	Bg:         "#0d1117",
+	Surface:    "#161b22",
+	Border:     "#30363d",
+	Muted:      "#21262d",
+	Subtle:     "#8b949e",
+	Text:       "#e6edf3",
+	Dim:        "#484f58",
+	CPUAccent:  "#58a6ff",
+	MemAccent:  "#3fb950",
+	DiskAccent: "#bc8cff",
+	Warn:       "#d29922",
+	Danger:     "#f85149",
+}
+
+var AyuMirageTheme = Theme{
+	Name:       "ayu-mirage",
+	Bg:         "#1a1f29",
+	Surface:    "#242936",
+	Border:     "#343d4d",
+	Muted:      "#3d4752",
+	Subtle:     "#5c6773",
+	Text:       "#cccac2",
+	Dim:        "#4a5568",
+	CPUAccent:  "#5ccfe6",
+	MemAccent:  "#bae67e",
+	DiskAccent: "#d4bfff",
+	Warn:       "#ffd580",
+	Danger:     "#ff6666",
+}
+
+var MonokaiProTheme = Theme{
+	Name:       "monokai-pro",
+	Bg:         "#19181a",
+	Surface:    "#221f22",
+	Border:     "#3a3a3c",
+	Muted:      "#403e41",
+	Subtle:     "#727072",
+	Text:       "#fcfcfa",
+	Dim:        "#5b595c",
+	CPUAccent:  "#78dce8",
+	MemAccent:  "#a9dc76",
+	DiskAccent: "#ab9df2",
+	Warn:       "#ffd866",
+	Danger:     "#ff6188",
+}
+
+var SynthwaveTheme = Theme{
+	Name:       "synthwave",
+	Bg:         "#1a1333",
+	Surface:    "#241b4d",
+	Border:     "#3a2d6e",
+	Muted:      "#3d2d7a",
+	Subtle:     "#8b6fc8",
+	Text:       "#f0eff1",
+	Dim:        "#5a4a8a",
+	CPUAccent:  "#36f9f6",
+	MemAccent:  "#72f1b8",
+	DiskAccent: "#fe45e6",
+	Warn:       "#fede5d",
+	Danger:     "#fe4450",
 }
