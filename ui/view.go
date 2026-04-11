@@ -37,7 +37,7 @@ func (m Model) View() string {
 	}
 
 	now := time.Now().Format("15:04:05")
-	titleStr := lipgloss.NewStyle().Bold(true).Foreground(components.ColorCPUAccent).Render("◆ PULSE") +
+	titleStr := lipgloss.NewStyle().Bold(true).Foreground(components.ColorCPUAccent).Render(components.CardIcons().Header+"PULSE") +
 		lipgloss.NewStyle().Foreground(components.ColorSubtle).Render(" AGENT (F1) ")
 	clockStr := lipgloss.NewStyle().Foreground(components.ColorDim).Render(now) +
 		components.DimStyle.Render(fmt.Sprintf("  up %s", utils.FormatUptime(time.Since(m.startedAt))))
