@@ -23,6 +23,7 @@ type Model struct {
 	showInfo       bool
 	modalScroll    int
 	showQuitDialog bool
+	quitCursor     int
 
 	cpuHistory  *models.MetricHistory
 	memHistory  *models.MetricHistory
@@ -130,19 +131,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 
 		switch msg.Type {
-		case tea.KeyRunes:
-			if m.showQuitDialog || m.showInfo {
+		case tea.KeyEsc:
+			if m.showQuitDialog {
+				m.showQuitDialog = false
+				m.quitCursor = 0
 				break
 			}
-			for _, r := range msg.String() {
-				if r == 'q' {
-					m.showQuitDialog = true
-					break
+			m.showInfo = false
+		case tea.KeyUp:
+			if m.showQuitDialog {
+				if m.quitCursor > 0 {
+					m.quitCursor--
 				}
-				if r == 't' {
-					m.showThemePicker = !m.showThemePicker
-					break
+				break
+			}
+			if m.showInfo && m.modalScroll > 0 {
+				m.modalScroll--
+			}
+		case tea.KeyDown:
+			if m.showQuitDialog {
+				if m.quitCursor < 1 {
+					m.quitCursor++
 				}
+				break
+			}
+			if m.showInfo {
+				m.modalScroll++
 			}
 		case tea.KeyF1:
 			if m.showQuitDialog {
@@ -152,25 +166,44 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.showInfo {
 				m.modalScroll = 0
 			}
+		case tea.KeyRunes:
+			if m.showQuitDialog {
+				switch msg.String() {
+				case "k":
+					if m.quitCursor > 0 {
+						m.quitCursor--
+					}
+				case "j":
+					if m.quitCursor < 1 {
+						m.quitCursor++
+					}
+				}
+				break
+			}
+			if m.showInfo {
+				break
+			}
+			for _, r := range msg.String() {
+				if r == 'q' {
+					m.showQuitDialog = true
+					m.quitCursor = 0
+					break
+				}
+				if r == 't' {
+					m.showThemePicker = !m.showThemePicker
+					break
+				}
+			}
 		case tea.KeyEnter:
 			if m.showQuitDialog {
-				return m, tea.Quit
-			}
-			m.showInfo = false
-		case tea.KeyEsc:
-			if m.showQuitDialog {
+				if m.quitCursor == 0 {
+					return m, tea.Quit
+				}
 				m.showQuitDialog = false
+				m.quitCursor = 0
 				break
 			}
 			m.showInfo = false
-		case tea.KeyUp:
-			if m.showInfo && m.modalScroll > 0 {
-				m.modalScroll--
-			}
-		case tea.KeyDown:
-			if m.showInfo {
-				m.modalScroll++
-			}
 		}
 	}
 	return m, nil
