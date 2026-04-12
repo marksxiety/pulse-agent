@@ -25,14 +25,17 @@
 
 ![Demo](assets/sample.png)
 
-Pulse-Agent is a lightweight, high-performance heartbeat agent that polls OS hardware metrics and streams them in real time to a terminal UI. Independent goroutines collect CPU, memory, and disk data; a shared channel hub delivers every reading to a single-threaded consumer with no explicit locking.
+Pulse-Agent is a lightweight system monitor that runs in your terminal and shows real-time CPU, memory, and disk usage. It updates live with progress bars and trend charts, and cleans up gracefully when you close it.
 
 ## Features
 
-- **Concurrent collectors** — CPU, memory, and disk each run in their own goroutine with independent polling intervals
-- **Lock-free transport** — an unbuffered Go channel eliminates data races between producers and consumer
-- **Live terminal UI** — progress bars, 3-hour sparkline trends, and a scrollable info modal via Bubble Tea
-- **Graceful shutdown** — SIGINT/SIGTERM triggers context cancellation; a WaitGroup waits for all collectors before teardown
+- **11 color themes** — Original, Catppuccin Mocha, Dracula, Nord, Gruvbox, Tokyo Night, One Dark Pro, GitHub Dark, Ayu Mirage, Monokai Pro, and Synthwave; switch live with the theme picker (`t`)
+- **Persistent settings** — your theme preference is saved and restored automatically on next launch
+- **Live stats** — CPU, memory, and disk are tracked independently with progress bars and 3-hour trend charts
+- **Info panel** — press F1 to open a scrollable glossary explaining each metric
+- **Quit confirmation** — press `q` for a safe quit prompt (Ctrl+C still quits instantly)
+- **Works everywhere** — icons, borders, and charts adapt to your terminal's capabilities
+- **Clean exit** — closing the app stops all background tasks before shutting down
 
 ## Requirements
 
@@ -52,56 +55,52 @@ Pulse-Agent is a lightweight, high-performance heartbeat agent that polls OS har
 
 ```mermaid
 graph LR
-    subgraph Collectors["Collectors · goroutines"]
-        CPU["CPU collector\npolls every 2s"]
-        MEM["Memory collector\npolls every 2s"]
-        DSK["Disk collector\npolls every 1s"]
+    INIT["Initialize<br>load config"]
+
+    subgraph Collectors["Collectors"]
+        CPU["CPU collector<br>polls every 2s"]
+        MEM["Memory collector<br>polls every 2s"]
+        DSK["Disk collector<br>polls every 1s"]
     end
 
-    subgraph Hub["Hub · transport"]
-        CH{{"Go channel\nunbuffered · thread-safe"}}
+    subgraph Hub["Hub"]
+        CH{{"Channel<br>thread-safe"}}
     end
 
-    subgraph UI["UI · Bubble Tea TUI"]
-        CARD["Dashboard cards"]
-        SPARK["Sparkline charts"]
-        MODAL["Info modal"]
+    subgraph TUI["TUI"]
+        RD["Dashboard readings"]
     end
 
-    SIG["SIGINT/SIGTERM\ncancel context"]
+    INIT --> CPU
+    INIT --> MEM
+    INIT --> DSK
 
-    SIG -.-> CPU
-    SIG -.-> MEM
-    SIG -.-> DSK
+    CPU -- Reading --> CH
+    MEM -- Reading --> CH
+    DSK -- Reading --> CH
 
-    CPU -- Metric{} --> CH
-    MEM -- Metric{} --> CH
-    DSK -- Metric{} --> CH
-
-    CH -- NewDataMsg --> UI
+    CH -- Update --> RD
 ```
 
 ## Key Components
 
-### Metric struct
-A unified data contract shared across the entire pipeline. Every collector produces one; the UI consumes one. Keeping this boundary explicit makes it straightforward to add new collectors without touching the UI layer.
+### Metric data
+Every collector produces a simple data package containing the metric name, value, and timestamp. The UI reads these packages and displays them as cards — adding a new metric only requires writing a new collector, with no changes needed in the UI.
 
 ### Channel hub
-An unbuffered, thread-safe Go channel connects producers to the consumer. Backpressure is natural — a collector blocks until the UI is ready — and there is no need for mutexes or shared state.
+A built-in Go channel safely passes readings from the collectors to the UI. If the UI is busy, the collectors wait — no data is lost and no extra locking is needed.
 
 ### Collectors
-Each collector is an independent goroutine running its own polling loop with context-based cancellation. CPU and memory fire every 2 seconds; disk fires every 1 second. All three stop cleanly on shutdown.
+CPU, memory, and disk each run on their own background worker with a timer. CPU and memory update every 2 seconds; disk updates every 1 second. All workers stop immediately when the app is asked to quit.
 
-### Bubble Tea UI
-The single consumer renders three dashboard cards (CPU, Memory, Disk) with live progress bars, 3-hour sparkline history, and a scrollable info modal.
+### Terminal UI
+Three dashboard cards show CPU, memory, and disk usage with live progress bars and 3-hour trend history. An info panel (F1) explains each metric in detail.
+
+### Theme system
+Colors are defined as named palettes and applied globally. Eleven presets are included — Original, Catppuccin Mocha, Dracula, Nord, Gruvbox, Tokyo Night, One Dark Pro, GitHub Dark, Ayu Mirage, Monokai Pro, and Synthwave. Open the theme picker with `t` to browse and switch live — your choice is saved to disk and restored on the next launch. The active theme name is always visible in the footer.
+
+### Terminal detection
+On startup the app checks what your terminal supports and picks the best icons, borders, and chart symbols automatically. On basic terminals it falls back to simple ASCII characters so everything still looks clean.
 
 ### Graceful shutdown
-On SIGINT or SIGTERM, the root context is cancelled. Each collector exits its loop, the WaitGroup drains, the channel closes, and the UI quits — in that order, every time.
-
-## Contributing
-
-Pull requests are welcome. Please open an issue first to discuss significant changes.
-
-## License
-
-[MIT](LICENSE)
+When you press `q` or Ctrl+C, all background workers are told to stop, they finish their current task, and then the app closes. Nothing is left hanging.
