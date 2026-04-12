@@ -33,10 +33,10 @@ This produces a `pulse-agent` binary (or `pulse-agent.exe` on Windows).
 
 ### Controls
 
-| Key | Action |
-|-----|--------|
-| `q` / `Ctrl+C` | Quit |
-| `F1` | Toggle info modal |
-| `Esc` | Close info modal |
-| `Enter` | Close info modal |
-| `Up` / `Down` | Scroll info modal |
+| Key            | Action                |
+|----------------|-----------------------|
+| `q` / `Ctrl+C` | Quit                  |
+| `F1`           | Toggle info modal     |
+| `Esc`          | Close info modal      |
+| `Enter`        | Close info modal      |
+| `Up` / `Down`  | Scroll info modal     |
