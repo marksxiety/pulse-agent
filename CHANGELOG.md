@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.1.0] - 2026-04-12
+
+### Features
+- Theme system with 11 color presets: Original, Catppuccin Mocha, Dracula, Nord, Gruvbox, Tokyo Night, One Dark Pro, GitHub Dark, Ayu Mirage, Monokai Pro, and Synthwave
+- Theme picker overlay (`t` key) with j/k and arrow key navigation, live theme switching, and full-width row highlight
+- Persistent user config (`~/.pulse-agent/config.yaml`) with YAML-based theme saving and loading
+- Terminal capability detection (Basic, Unicode, NerdFont) with automatic fallback for card icons, borders, sparklines, progress bars, scrollbars, and separators
+- Platform-aware icon sets for dashboard cards and view title header
+- Modal backdrop dimming via `ColorOverlay` for all modal overlays
+
+### Enhancements
+- Decoupled color palette from hardcoded values; theme applied globally via `ApplyTheme`
+- Quit confirm modal restyled with yes/no selector navigation (j/k + arrow keys)
+- Theme picker supports scrollable list with page window and position hint for large theme sets
+- Footer hint shows active theme name at a glance
+- Theme picker toggles on repeated `t` presses instead of only opening
+- Added screenshot demo to README
+
+### Fixes
+- Theme picker scroll state synced with cursor position for correct rendering
+- Theme picker modal correctly receives scroll offset for scroll-aware rendering
+- `SaveTheme` error handled gracefully — closes theme picker on write failure
+- `LoadConfig` error handled with fatal log exit on failure
+- Empty or missing theme defaults to Original instead of Catppuccin Mocha
+- Quit confirm modal receives cursor state for live selector rendering
+
 ## [1.0.0] - 2026-04-09
 
 ### Features
