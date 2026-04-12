@@ -228,6 +228,31 @@ func InfoModal(scroll int) string {
 		},
 	)...)
 
+	lines = append(lines, "", sepLine, "")
+
+	lines = append(lines, section(modalInnerW, ColorSubtle, "KEYBOARD  SHORTCUTS",
+		[]metricEntry{
+			{
+				label: "t",
+				desc:  "Open the theme picker to switch color themes.",
+				subs: []string{
+					"Choose from 11 built-in themes (original, catppuccin-mocha, dracula, etc.).",
+					"Your selection is saved and persists across restarts.",
+				},
+			},
+			{
+				label: "F1",
+				desc:  "Toggle this info / glossary modal.",
+				subs:  []string{"Press F1 or Esc to close."},
+			},
+			{
+				label: "q",
+				desc:  "Open the quit confirmation dialog.",
+				subs:  []string{"Press q again or Enter on yes to quit."},
+			},
+		},
+	)...)
+
 	totalLines := len(lines)
 
 	// Clamp scroll
