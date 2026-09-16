@@ -1,8 +1,10 @@
 # Pulse Agent — Desktop Widget
 
-A frameless, always-on-top desktop widget that shows live CPU, memory, and disk
-usage with 3-hour trend charts. It runs alongside the terminal UI and shares the
-same collectors, history model, and theme palettes.
+A frameless, fixed-size, always-on-top desktop widget that shows live CPU,
+memory, and disk usage with 3-hour trend charts. It runs alongside the terminal
+UI and shares the same collectors, history model, and theme palettes.
+
+![The desktop widget showing CPU, memory, and disk cards](../assets/widget.png)
 
 | | |
 |---|---|

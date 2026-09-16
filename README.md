@@ -72,6 +72,8 @@ rendered in WebView2 via [Wails](https://wails.io) instead of a
 terminal. It shows the same three metric cards, the same 3-hour trend
 charts, and the same 11 themes as the TUI.
 
+![The desktop widget showing CPU, memory, and disk cards](assets/widget.png)
+
 Both frontends share one config file, so a theme changed in either one
 applies to the other on its next launch. Press `◉` to pin or unpin the
 widget, `⬡` to change theme, and drag the top strip to move it.
