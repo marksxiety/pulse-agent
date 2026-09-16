@@ -1,1 +1,5 @@
 *.exe
+
+# `go build -o pulse-agent ./agent` drops an extensionless binary here. Ignore
+# it so a stray build artifact can never be committed.
+/pulse-agent
