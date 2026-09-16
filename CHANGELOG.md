@@ -1,5 +1,34 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Desktop widget for Windows (10/11): a frameless, fixed-size, always-on-top
+  system monitor built with Wails v2 and a Vue 3 + uPlot frontend, showing live
+  CPU, memory, and disk usage with 3-hour trend charts
+- `theme` package holding the 11 colour palettes with no UI dependency, so every
+  frontend consumes the same definitions
+- `models.Sampler`, `models.Series`, and `models.Percent` for rolling-history
+  sampling and metric summarisation
+- Window position, size, and always-on-top state persist in the shared config
+  file and are restored on launch
+
+### Changed
+
+- `utils.Config` holds multiple keys instead of only `theme`
+- Colour palettes moved out of `components`; `components` now adapts `theme`
+  into lipgloss styles for the terminal UI
+
+### Fixed
+
+- `SaveTheme` no longer discards unrelated settings. It rewrote the config file
+  from an in-memory copy, so the terminal UI changing the theme wiped the
+  widget's saved window position, and vice versa
+- Config access is guarded by a mutex; the widget reaches it from several
+  goroutines at once (webview methods, close handler, second-instance launch)
+- Widget uptime formatting matches the terminal UI's `FormatUptime`
+
 ## [1.1.0] - 2026-04-12
 
 ### Features (1.1.0)
