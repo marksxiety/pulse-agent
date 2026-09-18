@@ -1,0 +1,10 @@
+# Built output. The dist directory itself stays tracked (via the gitkeep
+# placeholder) because main.go embeds frontend/dist: with no tracked file in
+# there, `go build ./...` fails outright on a fresh clone.
+build/bin
+node_modules
+frontend/dist/*
+!frontend/dist/gitkeep
+
+# Wails caches the frontend dependency hash here; it is regenerated on build.
+frontend/package.json.md5

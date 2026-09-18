@@ -1,6 +1,10 @@
 package components
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"pulse-agent/theme"
+
+	"github.com/charmbracelet/lipgloss"
+)
 
 var (
 	ColorBg      lipgloss.Color
@@ -45,9 +49,9 @@ func init() {
 	ApplyTheme(OriginalTheme)
 }
 
-func ApplyTheme(t Theme) {
+func ApplyTheme(t theme.Theme) {
 	ColorBg, ColorSurface, ColorBorder, ColorMuted, ColorSubtle, ColorText, ColorDim,
-		ColorCPUAccent, ColorMemAccent, ColorDiskAccent, ColorWarn, ColorDang = t.Colors()
+		ColorCPUAccent, ColorMemAccent, ColorDiskAccent, ColorWarn, ColorDang = palette(t)
 
 	ColorOverlay = lipgloss.Color("#06060a")
 
@@ -64,4 +68,12 @@ func ApplyTheme(t Theme) {
 	DimStyle = lipgloss.NewStyle().Foreground(ColorDim)
 	HeaderStyle = lipgloss.NewStyle().Bold(true).Foreground(ColorText).Padding(0, 1)
 	FooterStyle = lipgloss.NewStyle().Foreground(ColorDim).Padding(0, 1)
+}
+
+// palette adapts a UI-free theme.Theme into lipgloss colours.
+func palette(t theme.Theme) (bg, surface, border, muted, subtle, text, dim, cpu, mem, disk, warn, dang lipgloss.Color) {
+	return lipgloss.Color(t.Bg), lipgloss.Color(t.Surface), lipgloss.Color(t.Border),
+		lipgloss.Color(t.Muted), lipgloss.Color(t.Subtle), lipgloss.Color(t.Text), lipgloss.Color(t.Dim),
+		lipgloss.Color(t.CPUAccent), lipgloss.Color(t.MemAccent), lipgloss.Color(t.DiskAccent),
+		lipgloss.Color(t.Warn), lipgloss.Color(t.Danger)
 }
